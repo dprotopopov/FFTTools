@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
 [assembly: AssemblyTitle("FFTTools")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("FFTTools")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Dmitry Protopopov")]
 [assembly: AssemblyProduct("FFTTools")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2015, Dmitry Protopopov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

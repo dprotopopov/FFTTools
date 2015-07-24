@@ -103,7 +103,7 @@ namespace FFTTools
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
-        public Image<Rgb, Byte> Stretch(Image<Rgb, Byte> bitmap)
+        public Image<Bgr, Byte> Stretch(Image<Bgr, Byte> bitmap)
         {
             using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
             {
@@ -152,7 +152,7 @@ namespace FFTTools
                     double power2 = Math.Sqrt(array2.Average(x => x*x));
                     double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
                     Buffer.BlockCopy(doubles2, 0, image2.Data, 0, Buffer.ByteLength(image2.Data));
-                    return image2.Convert<Rgb, Byte>();
+                    return image2.Convert<Bgr, Byte>();
                 }
             }
         }
