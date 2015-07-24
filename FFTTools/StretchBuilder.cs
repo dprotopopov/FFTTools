@@ -107,15 +107,17 @@ namespace FFTTools
         {
             using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
             {
-                var doubles = new double[image.Data.Length];
+                int length = image.Data.Length;
+                int n0 = image.Data.GetLength(0);
+                int n1 = image.Data.GetLength(1);
+                int n2 = image.Data.GetLength(2);
+                var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
                 double power = Math.Sqrt(doubles.Average(x => x*x));
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
-                var output = new fftw_complexarray(doubles.Length);
-                fftw_plan.dft_3d(image.Data.GetLength(0),
-                    image.Data.GetLength(1),
-                    image.Data.GetLength(2),
+                var output = new fftw_complexarray(length);
+                fftw_plan.dft_3d(n0, n1, n2,
                     input,
                     output,
                     fftw_direction.Forward,
@@ -124,26 +126,22 @@ namespace FFTTools
 
                 using (var image2 = new Image<Bgr, double>(_size))
                 {
-                    var complex2 = new Complex[image2.Data.Length];
+                    int length2 = image2.Data.Length;
+                    int m0 = image2.Data.GetLength(0);
+                    int m1 = image2.Data.GetLength(1);
+                    int m2 = image2.Data.GetLength(2);
+                    var complex2 = new Complex[length2];
 
-                    var data =
-                        new Complex[image.Data.GetLength(0),
-                            image.Data.GetLength(1),
-                            image.Data.GetLength(2)];
-                    var data2 =
-                        new Complex[image2.Data.GetLength(0),
-                            image2.Data.GetLength(1),
-                            image2.Data.GetLength(2)];
+                    var data = new Complex[n0, n1, n2];
+                    var data2 = new Complex[m0, m1, m2];
 
                     Copy(complex, ref data);
                     Copy(data, ref data2);
                     Copy(data2, ref complex2);
 
-                    var input2 = new fftw_complexarray(complex2.ToArray());
-                    var output2 = new fftw_complexarray(complex2.Length);
-                    fftw_plan.dft_3d(image2.Data.GetLength(0),
-                        image2.Data.GetLength(1),
-                        image2.Data.GetLength(2),
+                    var input2 = new fftw_complexarray(complex2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan.dft_3d(m0, m1, m2,
                         input2,
                         output2,
                         fftw_direction.Backward,
@@ -165,15 +163,17 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             {
-                var doubles = new double[image.Data.Length];
+                int length = image.Data.Length;
+                int n0 = image.Data.GetLength(0);
+                int n1 = image.Data.GetLength(1);
+                int n2 = image.Data.GetLength(2);
+                var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
                 double power = Math.Sqrt(doubles.Average(x => x*x));
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
-                var output = new fftw_complexarray(doubles.Length);
-                fftw_plan.dft_3d(image.Data.GetLength(0),
-                    image.Data.GetLength(1),
-                    image.Data.GetLength(2),
+                var output = new fftw_complexarray(length);
+                fftw_plan.dft_3d(n0, n1, n2,
                     input,
                     output,
                     fftw_direction.Forward,
@@ -182,26 +182,22 @@ namespace FFTTools
 
                 using (var image2 = new Image<Bgr, double>(_size))
                 {
-                    var complex2 = new Complex[image2.Data.Length];
+                    int length2 = image2.Data.Length;
+                    int m0 = image2.Data.GetLength(0);
+                    int m1 = image2.Data.GetLength(1);
+                    int m2 = image2.Data.GetLength(2);
+                    var complex2 = new Complex[length2];
 
-                    var data =
-                        new Complex[image.Data.GetLength(0),
-                            image.Data.GetLength(1),
-                            image.Data.GetLength(2)];
-                    var data2 =
-                        new Complex[image2.Data.GetLength(0),
-                            image2.Data.GetLength(1),
-                            image2.Data.GetLength(2)];
+                    var data = new Complex[n0, n1, n2];
+                    var data2 = new Complex[m0, m1, m2];
 
                     Copy(complex, ref data);
                     Copy(data, ref data2);
                     Copy(data2, ref complex2);
 
-                    var input2 = new fftw_complexarray(complex2.ToArray());
-                    var output2 = new fftw_complexarray(complex2.Length);
-                    fftw_plan.dft_3d(image2.Data.GetLength(0),
-                        image2.Data.GetLength(1),
-                        image2.Data.GetLength(2),
+                    var input2 = new fftw_complexarray(complex2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan.dft_3d(m0, m1, m2,
                         input2,
                         output2,
                         fftw_direction.Backward,

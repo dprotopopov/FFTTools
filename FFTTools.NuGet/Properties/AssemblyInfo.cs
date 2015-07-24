@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("FFTTools.NuGet")]
-[assembly: AssemblyDescription("Project template made by EyeCatch (http://www.eyecatch.no/)")]
+[assembly: AssemblyDescription("FFTTools is a collection of  algorithms with Discrete Fourier Transform")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Dmitry Protopopov")]
 [assembly: AssemblyProduct("FFTTools.NuGet")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2015, Dmitry Protopopov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
