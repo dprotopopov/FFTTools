@@ -159,6 +159,62 @@ namespace FFTTools
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
+        public Image<Gray, Byte> Stretch(Image<Gray, Byte> bitmap)
+        {
+            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
+            {
+                int length = image.Data.Length;
+                int n0 = image.Data.GetLength(0);
+                int n1 = image.Data.GetLength(1);
+                int n2 = image.Data.GetLength(2);
+                var doubles = new double[length];
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
+                double power = Math.Sqrt(doubles.Average(x => x*x));
+
+                var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
+                var output = new fftw_complexarray(length);
+                fftw_plan.dft_3d(n0, n1, n2,
+                    input,
+                    output,
+                    fftw_direction.Forward,
+                    fftw_flags.Estimate).Execute();
+                Complex[] complex = output.GetData_Complex();
+
+                using (var image2 = new Image<Gray, double>(_size))
+                {
+                    int length2 = image2.Data.Length;
+                    int m0 = image2.Data.GetLength(0);
+                    int m1 = image2.Data.GetLength(1);
+                    int m2 = image2.Data.GetLength(2);
+                    var complex2 = new Complex[length2];
+
+                    var data = new Complex[n0, n1, n2];
+                    var data2 = new Complex[m0, m1, m2];
+
+                    Copy(complex, ref data);
+                    Copy(data, ref data2);
+                    Copy(data2, ref complex2);
+
+                    var input2 = new fftw_complexarray(complex2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan.dft_3d(m0, m1, m2,
+                        input2,
+                        output2,
+                        fftw_direction.Backward,
+                        fftw_flags.Estimate).Execute();
+                    double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
+                    double power2 = Math.Sqrt(array2.Average(x => x*x));
+                    double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
+                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, Buffer.ByteLength(image2.Data));
+                    return image2.Convert<Gray, Byte>();
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Resize bitmap with the Fastest Fourier Transform
+        /// </summary>
+        /// <returns>Resized bitmap</returns>
         public Bitmap Stretch(Bitmap bitmap)
         {
             using (var image = new Image<Bgr, double>(bitmap))
