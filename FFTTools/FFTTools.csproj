@@ -68,32 +68,41 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Emgu.CV">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.dll</HintPath>
+    <Reference Include="Emgu.CV, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.GPU">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.GPU.dll</HintPath>
+    <Reference Include="Emgu.CV.GPU, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.GPU.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.ML">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.ML.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.ML.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.OCR">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.OCR.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.OCR.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.OpenCL">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.OpenCL.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.OpenCL.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.Stitching">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.Stitching.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.Stitching.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.UI">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.UI.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.UI.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.VideoStab">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.VideoStab.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.CV.VideoStab.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.Util">
-      <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.Util.dll</HintPath>
+      <HintPath>..\packages\VDK.EmguCV.x86.2.4.10\lib\Emgu.Util.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
