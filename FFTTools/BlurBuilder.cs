@@ -169,10 +169,10 @@ namespace FFTTools
             int n0 = data.GetLength(0);
             int n1 = data.GetLength(1);
             int n2 = data.GetLength(2);
-            int s0 = Math.Max(0, (n0 - size.Width)/2);
-            int s1 = Math.Max(0, (n1 - size.Height)/2);
-            int e0 = Math.Min((n0 + size.Width)/2, n0 - 1);
-            int e1 = Math.Min((n1 + size.Height)/2, n1 - 1);
+            int s0 = Math.Max(0, (n0 - size.Height) / 2);
+            int s1 = Math.Max(0, (n1 - size.Width) / 2);
+            int e0 = Math.Min((n0 + size.Height) / 2, n0 - 1);
+            int e1 = Math.Min((n1 + size.Width) / 2, n1 - 1);
             for (int k = 0; k < n2; k++)
             {
                 for (int i = 0; i < n0; i++)

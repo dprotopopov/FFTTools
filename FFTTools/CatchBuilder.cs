@@ -157,8 +157,8 @@ namespace FFTTools
                 {
                     if (data[i, j] < value) continue;
                     value = data[i, j];
-                    x = i;
-                    y = j;
+                    x = j;
+                    y = i;
                 }
             }
         }
