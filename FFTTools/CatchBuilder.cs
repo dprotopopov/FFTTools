@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using FFTWSharp;
 
@@ -25,7 +24,6 @@ namespace FFTTools
         {
             _patternImage =
                 new Image<Gray, Byte>(patternBitmap)
-                    .Flip(FLIP.HORIZONTAL | FLIP.VERTICAL)
                     .Convert<Gray, double>();
         }
 
@@ -119,23 +117,26 @@ namespace FFTTools
         /// <summary>
         ///     Copy 3D array to 2D array
         ///     Reduce last dimension
+        ///     Flip
         /// </summary>
         /// <param name="input">Input array</param>
         /// <param name="output">Output array</param>
         private static void Copy(double[,,] input, ref double[,] output)
         {
-            int n0 = Math.Min(input.GetLength(0), output.GetLength(0));
-            int n1 = Math.Min(input.GetLength(1), output.GetLength(1));
+            int n0 = input.GetLength(0);
+            int n1 = input.GetLength(1);
             int n2 = input.GetLength(2);
+            int m0 = Math.Min(n0, output.GetLength(0));
+            int m1 = Math.Min(n1, output.GetLength(1));
 
-            for (int i = 0; i < n0; i++)
-                for (int j = 0; j < n1; j++)
-                    output[i, j] = input[i, j, 0];
+            for (int i = 0; i < m0; i++)
+                for (int j = 0; j < m1; j++)
+                    output[(n0 - i)%n0, (n1 - j)%n1] = input[i, j, 0];
 
             for (int k = 1; k < n2; k++)
-                for (int i = 0; i < n0; i++)
-                    for (int j = 0; j < n1; j++)
-                        output[i, j] += input[i, j, k];
+                for (int i = 0; i < m0; i++)
+                    for (int j = 0; j < m1; j++)
+                        output[(n0 - i)%n0, (n1 - j)%n1] += input[i, j, k];
         }
 
         /// <summary>
