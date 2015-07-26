@@ -13,17 +13,20 @@ namespace FFTTools
     /// </summary>
     public class BlurBuilder : IDisposable
     {
-        private readonly Size _size;
+        private readonly Size _blenderSize; //blender size
 
         /// <summary>
         ///     Builder constructor
         /// </summary>
-        /// <param name="size">Bitmap blur size</param>
-        public BlurBuilder(Size size)
+        /// <param name="blenderSize">Bitmap blur blender size</param>
+        public BlurBuilder(Size blenderSize)
         {
-            _size = size;
+            _blenderSize = blenderSize;
         }
 
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
         }
@@ -91,7 +94,7 @@ namespace FFTTools
                 var data = new Complex[n0, n1, n2];
 
                 Copy(complex, ref data);
-                Blind(ref data, _size);
+                Blind(ref data, _blenderSize);
                 Copy(data, ref complex);
 
                 input.SetData(complex);
@@ -138,7 +141,7 @@ namespace FFTTools
                 var data = new Complex[n0, n1, n2];
 
                 Copy(complex, ref data);
-                Blind(ref data, _size);
+                Blind(ref data, _blenderSize);
                 Copy(data, ref complex);
 
                 input.SetData(complex);
@@ -218,7 +221,7 @@ namespace FFTTools
                 var data = new Complex[n0, n1, n2];
 
                 Copy(complex, ref data);
-                Blind(ref data, _size);
+                Blind(ref data, _blenderSize);
                 Copy(data, ref complex);
 
                 input.SetData(complex);

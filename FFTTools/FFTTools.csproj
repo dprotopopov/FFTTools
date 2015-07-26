@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlurBuilder.cs" />
+    <Compile Include="CatchBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StretchBuilder.cs" />
   </ItemGroup>

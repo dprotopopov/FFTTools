@@ -14,17 +14,20 @@ namespace FFTTools
     /// </summary>
     public class StretchBuilder : IDisposable
     {
-        private readonly Size _size;
+        private readonly Size _newSize;
 
         /// <summary>
         ///     Builder constructor
         /// </summary>
-        /// <param name="size">Bitmap new size</param>
-        public StretchBuilder(Size size)
+        /// <param name="newSize">Bitmap new size</param>
+        public StretchBuilder(Size newSize)
         {
-            _size = size;
+            _newSize = newSize;
         }
 
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
         }
@@ -124,7 +127,7 @@ namespace FFTTools
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
 
-                using (var image2 = new Image<Bgr, double>(_size))
+                using (var image2 = new Image<Bgr, double>(_newSize))
                 {
                     int length2 = image2.Data.Length;
                     int m0 = image2.Data.GetLength(0);
@@ -180,7 +183,7 @@ namespace FFTTools
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
 
-                using (var image2 = new Image<Gray, double>(_size))
+                using (var image2 = new Image<Gray, double>(_newSize))
                 {
                     int length2 = image2.Data.Length;
                     int m0 = image2.Data.GetLength(0);
@@ -236,7 +239,7 @@ namespace FFTTools
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
 
-                using (var image2 = new Image<Bgr, double>(_size))
+                using (var image2 = new Image<Bgr, double>(_newSize))
                 {
                     int length2 = image2.Data.Length;
                     int m0 = image2.Data.GetLength(0);

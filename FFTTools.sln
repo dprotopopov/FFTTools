@@ -41,6 +41,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fftblinder", "..\fftblinder
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fftblinder.UnitTest", "..\fftblinder\fftblinder.UnitTest\fftblinder.UnitTest.csproj", "{E509B565-AB5F-41DC-BEBE-2D109CFC971D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fftcatcher", "..\fftcatcher\fftcatcher\fftcatcher.csproj", "{CA4C68D5-D970-4DA6-8CF2-70C308F92125}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fftcatcher.UnitTest", "..\fftcatcher\fftcatcher.UnitTest\fftcatcher.UnitTest.csproj", "{C6137424-8533-4071-961D-478B7CE7C791}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +128,20 @@ Global
 		{E509B565-AB5F-41DC-BEBE-2D109CFC971D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E509B565-AB5F-41DC-BEBE-2D109CFC971D}.Release|x64.ActiveCfg = Release|Any CPU
 		{E509B565-AB5F-41DC-BEBE-2D109CFC971D}.Release|x86.ActiveCfg = Release|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Release|x64.ActiveCfg = Release|Any CPU
+		{CA4C68D5-D970-4DA6-8CF2-70C308F92125}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Release|x64.ActiveCfg = Release|Any CPU
+		{C6137424-8533-4071-961D-478B7CE7C791}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
