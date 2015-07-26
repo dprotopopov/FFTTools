@@ -23,7 +23,10 @@ namespace FFTTools
         /// <param name="patternBitmap">Pattern bitmap</param>
         public CatchBuilder(Bitmap patternBitmap)
         {
-            _patternImage = new Image<Gray, double>(patternBitmap).Flip(FLIP.HORIZONTAL | FLIP.VERTICAL);
+            _patternImage =
+                new Image<Gray, Byte>(patternBitmap)
+                    .Flip(FLIP.HORIZONTAL | FLIP.VERTICAL)
+                    .Convert<Gray, double>();
         }
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace FFTTools
         /// <returns>Array of values</returns>
         public double[,] Catch(Image<Bgr, Byte> bitmap)
         {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
+            using (Image<Gray, Byte> image = bitmap.Convert<Gray, Byte>())
                 return Catch(image);
         }
 
