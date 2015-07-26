@@ -42,7 +42,7 @@ namespace FFTTools
         /// <returns>Array of values</returns>
         public double[,] Catch(Bitmap bitmap)
         {
-            using (var image = new Image<Gray, double>(bitmap))
+            using (var image = new Image<Gray, Byte>(bitmap))
                 return Catch(image);
         }
 
