@@ -4,3 +4,9 @@
 [submodule "FFTWSharp"]
 	path = FFTWSharp
 	url = https://github.com/tszalay/FFTWSharp.git
+[submodule "emgucv"]
+	path = emgucv-code
+	url = git://git.code.sf.net/p/emgucv/code emgucv-code
+[submodule "opencv"]
+	path = opencv
+	url = https://github.com/Itseez/opencv.git

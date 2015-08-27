@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using FFTWSharp;
@@ -37,7 +38,7 @@ namespace FFTTools
         /// </summary>
         /// <param name="input">Input array</param>
         /// <param name="output">Output array</param>
-        private static void Copy(Complex[,,] input, ref Complex[,,] output)
+        private static void Copy(Complex[,,] input, Complex[,,] output)
         {
             int n0 = input.GetLength(0);
             int n1 = input.GetLength(1);
@@ -69,40 +70,6 @@ namespace FFTTools
         }
 
         /// <summary>
-        ///     Copy arrays
-        /// </summary>
-        /// <param name="input">Input array</param>
-        /// <param name="output">Output array</param>
-        private static void Copy(Complex[,,] input, ref Complex[] output)
-        {
-            int n0 = input.GetLength(0);
-            int n1 = input.GetLength(1);
-            int n2 = input.GetLength(2);
-            int index = 0;
-            for (int i = 0; i < n0; i++)
-                for (int j = 0; j < n1; j++)
-                    for (int k = 0; k < n2; k++)
-                        output[index++] = input[i, j, k];
-        }
-
-        /// <summary>
-        ///     Copy arrays
-        /// </summary>
-        /// <param name="input">Input array</param>
-        /// <param name="output">Output array</param>
-        private static void Copy(Complex[] input, ref Complex[,,] output)
-        {
-            int n0 = output.GetLength(0);
-            int n1 = output.GetLength(1);
-            int n2 = output.GetLength(2);
-            int index = 0;
-            for (int i = 0; i < n0; i++)
-                for (int j = 0; j < n1; j++)
-                    for (int k = 0; k < n2; k++)
-                        output[i, j, k] = input[index++];
-        }
-
-        /// <summary>
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
@@ -115,14 +82,12 @@ namespace FFTTools
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
                 double power = Math.Sqrt(doubles.Average(x => x*x));
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2,
-                    input,
-                    output,
+                fftw_plan.dft_3d(n0, n1, n2, input, output,
                     fftw_direction.Forward,
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
@@ -138,21 +103,41 @@ namespace FFTTools
                     var data = new Complex[n0, n1, n2];
                     var data2 = new Complex[m0, m1, m2];
 
-                    Copy(complex, ref data);
-                    Copy(data, ref data2);
-                    Copy(data2, ref complex2);
+                    var buffer = new double[length*2];
+                    GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
+                    GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                    IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
+                    IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
+
+                    Copy(data, data2);
+
+                    buffer = new double[length2*2];
+                    complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
+                    dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
+                    complexPtr = complexHandle.AddrOfPinnedObject();
+                    dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
 
                     var input2 = new fftw_complexarray(complex2);
                     var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2,
-                        input2,
-                        output2,
+                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
                     double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
                     double power2 = Math.Sqrt(array2.Average(x => x*x));
                     double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, Buffer.ByteLength(image2.Data));
+                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Convert<Bgr, Byte>();
                 }
             }
@@ -171,14 +156,12 @@ namespace FFTTools
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
                 double power = Math.Sqrt(doubles.Average(x => x*x));
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2,
-                    input,
-                    output,
+                fftw_plan.dft_3d(n0, n1, n2, input, output,
                     fftw_direction.Forward,
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
@@ -194,21 +177,41 @@ namespace FFTTools
                     var data = new Complex[n0, n1, n2];
                     var data2 = new Complex[m0, m1, m2];
 
-                    Copy(complex, ref data);
-                    Copy(data, ref data2);
-                    Copy(data2, ref complex2);
+                    var buffer = new double[length*2];
+                    GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
+                    GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                    IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
+                    IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
+
+                    Copy(data, data2);
+
+                    buffer = new double[length2*2];
+                    complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
+                    dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
+                    complexPtr = complexHandle.AddrOfPinnedObject();
+                    dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
 
                     var input2 = new fftw_complexarray(complex2);
                     var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2,
-                        input2,
-                        output2,
+                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
                     double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
                     double power2 = Math.Sqrt(array2.Average(x => x*x));
                     double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, Buffer.ByteLength(image2.Data));
+                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Convert<Gray, Byte>();
                 }
             }
@@ -227,14 +230,12 @@ namespace FFTTools
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, Buffer.ByteLength(image.Data));
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
                 double power = Math.Sqrt(doubles.Average(x => x*x));
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2,
-                    input,
-                    output,
+                fftw_plan.dft_3d(n0, n1, n2, input, output,
                     fftw_direction.Forward,
                     fftw_flags.Estimate).Execute();
                 Complex[] complex = output.GetData_Complex();
@@ -250,21 +251,41 @@ namespace FFTTools
                     var data = new Complex[n0, n1, n2];
                     var data2 = new Complex[m0, m1, m2];
 
-                    Copy(complex, ref data);
-                    Copy(data, ref data2);
-                    Copy(data2, ref complex2);
+                    var buffer = new double[length*2];
+                    GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
+                    GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                    IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
+                    IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
+
+                    Copy(data, data2);
+
+                    buffer = new double[length2*2];
+                    complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
+                    dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
+                    complexPtr = complexHandle.AddrOfPinnedObject();
+                    dataPtr = dataHandle.AddrOfPinnedObject();
+
+                    Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
+                    Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
+
+                    complexHandle.Free();
+                    dataHandle.Free();
 
                     var input2 = new fftw_complexarray(complex2);
                     var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2,
-                        input2,
-                        output2,
+                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
                     double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
                     double power2 = Math.Sqrt(array2.Average(x => x*x));
                     double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, Buffer.ByteLength(image2.Data));
+                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Bitmap;
                 }
             }
