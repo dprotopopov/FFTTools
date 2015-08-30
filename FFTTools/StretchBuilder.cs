@@ -15,15 +15,18 @@ namespace FFTTools
     /// </summary>
     public class StretchBuilder : IDisposable
     {
+        private readonly KeepOption _keepOption;
         private readonly Size _newSize;
 
         /// <summary>
         ///     Builder constructor
         /// </summary>
         /// <param name="newSize">Bitmap new size</param>
-        public StretchBuilder(Size newSize)
+        /// <param name="keepOption"></param>
+        public StretchBuilder(Size newSize, KeepOption keepOption = KeepOption.AverageAndDelta)
         {
             _newSize = newSize;
+            _keepOption = keepOption;
         }
 
         /// <summary>
@@ -83,7 +86,24 @@ namespace FFTTools
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
-                double power = Math.Sqrt(doubles.Average(x => x*x));
+                double average = doubles.Average();
+                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
+                switch (_keepOption)
+                {
+                    case KeepOption.AverageAndDelta:
+                        break;
+                    case KeepOption.Sum:
+                        average = doubles.Sum();
+                        break;
+                    case KeepOption.Square:
+                        average = Math.Sqrt(doubles.Sum(x => x*x));
+                        break;
+                    case KeepOption.AverageSquare:
+                        average = Math.Sqrt(doubles.Average(x => x*x));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
@@ -134,10 +154,31 @@ namespace FFTTools
                     fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
-                    double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
-                    double power2 = Math.Sqrt(array2.Average(x => x*x));
-                    double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
+                    doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
+                    double average2 = doubles.Average();
+                    double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                    switch (_keepOption)
+                    {
+                        case KeepOption.AverageAndDelta:
+                            break;
+                        case KeepOption.Sum:
+                            average2 = doubles.Sum();
+                            break;
+                        case KeepOption.Square:
+                            average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                            break;
+                        case KeepOption.AverageSquare:
+                            average2 = Math.Sqrt(doubles.Average(x => x*x));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    // a*average2 + b = average
+                    // a*delta2 = delta
+                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                    doubles = doubles.Select(x => a*x + b).ToArray();
+                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Convert<Bgr, Byte>();
                 }
             }
@@ -157,7 +198,24 @@ namespace FFTTools
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
-                double power = Math.Sqrt(doubles.Average(x => x*x));
+                double average = doubles.Average();
+                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
+                switch (_keepOption)
+                {
+                    case KeepOption.AverageAndDelta:
+                        break;
+                    case KeepOption.Sum:
+                        average = doubles.Sum();
+                        break;
+                    case KeepOption.Square:
+                        average = Math.Sqrt(doubles.Sum(x => x*x));
+                        break;
+                    case KeepOption.AverageSquare:
+                        average = Math.Sqrt(doubles.Average(x => x*x));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
@@ -208,10 +266,31 @@ namespace FFTTools
                     fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
-                    double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
-                    double power2 = Math.Sqrt(array2.Average(x => x*x));
-                    double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
+                    doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
+                    double average2 = doubles.Average();
+                    double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                    switch (_keepOption)
+                    {
+                        case KeepOption.AverageAndDelta:
+                            break;
+                        case KeepOption.Sum:
+                            average2 = doubles.Sum();
+                            break;
+                        case KeepOption.Square:
+                            average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                            break;
+                        case KeepOption.AverageSquare:
+                            average2 = Math.Sqrt(doubles.Average(x => x*x));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    // a*average2 + b = average
+                    // a*delta2 = delta
+                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                    doubles = doubles.Select(x => a*x + b).ToArray();
+                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Convert<Gray, Byte>();
                 }
             }
@@ -231,7 +310,24 @@ namespace FFTTools
                 int n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
-                double power = Math.Sqrt(doubles.Average(x => x*x));
+                double average = doubles.Average();
+                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
+                switch (_keepOption)
+                {
+                    case KeepOption.AverageAndDelta:
+                        break;
+                    case KeepOption.Sum:
+                        average = doubles.Sum();
+                        break;
+                    case KeepOption.Square:
+                        average = Math.Sqrt(doubles.Sum(x => x*x));
+                        break;
+                    case KeepOption.AverageSquare:
+                        average = Math.Sqrt(doubles.Average(x => x*x));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
 
                 var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
                 var output = new fftw_complexarray(length);
@@ -282,10 +378,31 @@ namespace FFTTools
                     fftw_plan.dft_3d(m0, m1, m2, input2, output2,
                         fftw_direction.Backward,
                         fftw_flags.Estimate).Execute();
-                    double[] array2 = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
-                    double power2 = Math.Sqrt(array2.Average(x => x*x));
-                    double[] doubles2 = array2.Select(x => x*power/power2).ToArray();
-                    Buffer.BlockCopy(doubles2, 0, image2.Data, 0, length2*sizeof (double));
+                    doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
+                    double average2 = doubles.Average();
+                    double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                    switch (_keepOption)
+                    {
+                        case KeepOption.AverageAndDelta:
+                            break;
+                        case KeepOption.Sum:
+                            average2 = doubles.Sum();
+                            break;
+                        case KeepOption.Square:
+                            average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                            break;
+                        case KeepOption.AverageSquare:
+                            average2 = Math.Sqrt(doubles.Average(x => x*x));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    // a*average2 + b = average
+                    // a*delta2 = delta
+                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                    doubles = doubles.Select(x => a*x + b).ToArray();
+                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2*sizeof (double));
                     return image2.Bitmap;
                 }
             }
