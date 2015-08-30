@@ -492,7 +492,7 @@
             this.repositoryItemSpreadsheetFontSizeEdit1,
             this.repositoryItemPopupGalleryEdit1});
             this.ribbonControl.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonControlStyle.Office2010;
-            this.ribbonControl.Size = new System.Drawing.Size(1100, 170);
+            this.ribbonControl.Size = new System.Drawing.Size(1100, 202);
             this.ribbonControl.StatusBar = this.ribbonStatusBar;
             this.ribbonControl.Toolbar.ItemLinks.Add(this.iHelp);
             // 
@@ -798,10 +798,10 @@
             // 
             this.ribbonStatusBar.ItemLinks.Add(this.siStatus);
             this.ribbonStatusBar.ItemLinks.Add(this.siInfo);
-            this.ribbonStatusBar.Location = new System.Drawing.Point(0, 665);
+            this.ribbonStatusBar.Location = new System.Drawing.Point(0, 657);
             this.ribbonStatusBar.Name = "ribbonStatusBar";
             this.ribbonStatusBar.Ribbon = this.ribbonControl;
-            this.ribbonStatusBar.Size = new System.Drawing.Size(1100, 35);
+            this.ribbonStatusBar.Size = new System.Drawing.Size(1100, 43);
             // 
             // commandBarGalleryDropDown1
             // 
@@ -2251,13 +2251,13 @@
             // splitContainerControl1
             // 
             this.splitContainerControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerControl1.Location = new System.Drawing.Point(0, 170);
+            this.splitContainerControl1.Location = new System.Drawing.Point(0, 202);
             this.splitContainerControl1.Name = "splitContainerControl1";
             this.splitContainerControl1.Panel1.Controls.Add(this.splitContainerControl2);
             this.splitContainerControl1.Panel1.Text = "Panel1";
             this.splitContainerControl1.Panel2.Controls.Add(this.pictureEditFile);
             this.splitContainerControl1.Panel2.Text = "Panel2";
-            this.splitContainerControl1.Size = new System.Drawing.Size(1100, 495);
+            this.splitContainerControl1.Size = new System.Drawing.Size(1100, 455);
             this.splitContainerControl1.SplitterPosition = 356;
             this.splitContainerControl1.TabIndex = 9;
             this.splitContainerControl1.Text = "splitContainerControl1";
@@ -2272,7 +2272,7 @@
             this.splitContainerControl2.Panel1.Text = "Panel1";
             this.splitContainerControl2.Panel2.Controls.Add(this.propertyGridControl1);
             this.splitContainerControl2.Panel2.Text = "Panel2";
-            this.splitContainerControl2.Size = new System.Drawing.Size(356, 495);
+            this.splitContainerControl2.Size = new System.Drawing.Size(356, 455);
             this.splitContainerControl2.SplitterPosition = 254;
             this.splitContainerControl2.TabIndex = 0;
             this.splitContainerControl2.Text = "splitContainerControl2";
@@ -2291,7 +2291,7 @@
             this.propertyGridControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGridControl1.Location = new System.Drawing.Point(0, 0);
             this.propertyGridControl1.Name = "propertyGridControl1";
-            this.propertyGridControl1.Size = new System.Drawing.Size(356, 236);
+            this.propertyGridControl1.Size = new System.Drawing.Size(356, 193);
             this.propertyGridControl1.TabIndex = 0;
             // 
             // pictureEditFile
@@ -2300,8 +2300,9 @@
             this.pictureEditFile.Location = new System.Drawing.Point(0, 0);
             this.pictureEditFile.MenuManager = this.ribbonControl;
             this.pictureEditFile.Name = "pictureEditFile";
-            this.pictureEditFile.Size = new System.Drawing.Size(739, 495);
+            this.pictureEditFile.Size = new System.Drawing.Size(736, 455);
             this.pictureEditFile.TabIndex = 7;
+            this.pictureEditFile.EditValueChanged += new System.EventHandler(this.pictureEditFile_EditValueChanged);
             // 
             // MainForm
             // 
