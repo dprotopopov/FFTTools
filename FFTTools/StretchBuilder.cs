@@ -99,6 +99,11 @@ namespace FFTTools
                 int n0 = image.Data.GetLength(0);
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
+                var input = new fftw_complexarray(length);
+                var output = new fftw_complexarray(length);
+                fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
+                    fftw_direction.Forward,
+                    fftw_flags.Estimate);
                 var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
                 double average = doubles.Average();
@@ -120,11 +125,8 @@ namespace FFTTools
                         throw new NotImplementedException();
                 }
 
-                var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
-                var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Forward,
-                    fftw_flags.Estimate).Execute();
+                input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
+                forward.Execute();
                 Complex[] complex = output.GetData_Complex();
 
                 Size newSize = _newSize;
@@ -147,6 +149,11 @@ namespace FFTTools
                     int m0 = image2.Data.GetLength(0);
                     int m1 = image2.Data.GetLength(1);
                     int m2 = image2.Data.GetLength(2);
+                    var input2 = new fftw_complexarray(length2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan backward = fftw_plan.dft_3d(m0, m1, m2, input2, output2,
+                        fftw_direction.Backward,
+                        fftw_flags.Estimate);
                     var complex2 = new Complex[length2];
 
                     var data = new Complex[n0, n1, n2];
@@ -157,10 +164,8 @@ namespace FFTTools
                     GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                     IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
                     IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
@@ -171,18 +176,13 @@ namespace FFTTools
                     dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
                     complexPtr = complexHandle.AddrOfPinnedObject();
                     dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
-                    var input2 = new fftw_complexarray(complex2);
-                    var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
-                        fftw_direction.Backward,
-                        fftw_flags.Estimate).Execute();
+                    input2.SetData(complex2);
+                    backward.Execute();
                     doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
                     double average2 = doubles.Average();
@@ -228,10 +228,15 @@ namespace FFTTools
                 int n0 = image.Data.GetLength(0);
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
+                var input = new fftw_complexarray(length);
+                var output = new fftw_complexarray(length);
+                fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
+                    fftw_direction.Forward,
+                    fftw_flags.Estimate);
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, length * sizeof(double));
                 double average = doubles.Average();
-                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
+                double delta = Math.Sqrt(doubles.Average(x => x * x) - average * average);
                 switch (_keepOption)
                 {
                     case KeepOption.AverageAndDelta:
@@ -240,20 +245,17 @@ namespace FFTTools
                         average = doubles.Sum();
                         break;
                     case KeepOption.Square:
-                        average = Math.Sqrt(doubles.Sum(x => x*x));
+                        average = Math.Sqrt(doubles.Sum(x => x * x));
                         break;
                     case KeepOption.AverageSquare:
-                        average = Math.Sqrt(doubles.Average(x => x*x));
+                        average = Math.Sqrt(doubles.Average(x => x * x));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
 
-                var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
-                var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Forward,
-                    fftw_flags.Estimate).Execute();
+                input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
+                forward.Execute();
                 Complex[] complex = output.GetData_Complex();
 
                 Size newSize = _newSize;
@@ -276,46 +278,44 @@ namespace FFTTools
                     int m0 = image2.Data.GetLength(0);
                     int m1 = image2.Data.GetLength(1);
                     int m2 = image2.Data.GetLength(2);
+                    var input2 = new fftw_complexarray(length2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan backward = fftw_plan.dft_3d(m0, m1, m2, input2, output2,
+                        fftw_direction.Backward,
+                        fftw_flags.Estimate);
                     var complex2 = new Complex[length2];
 
                     var data = new Complex[n0, n1, n2];
                     var data2 = new Complex[m0, m1, m2];
 
-                    var buffer = new double[length*2];
+                    var buffer = new double[length * 2];
                     GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
                     GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                     IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
                     IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
                     Copy(data, data2);
 
-                    buffer = new double[length2*2];
+                    buffer = new double[length2 * 2];
                     complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
                     dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
                     complexPtr = complexHandle.AddrOfPinnedObject();
                     dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
-                    var input2 = new fftw_complexarray(complex2);
-                    var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
-                        fftw_direction.Backward,
-                        fftw_flags.Estimate).Execute();
+                    input2.SetData(complex2);
+                    backward.Execute();
                     doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
                     double average2 = doubles.Average();
-                    double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                    double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
                     switch (_keepOption)
                     {
                         case KeepOption.AverageAndDelta:
@@ -324,22 +324,22 @@ namespace FFTTools
                             average2 = doubles.Sum();
                             break;
                         case KeepOption.Square:
-                            average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                            average2 = Math.Sqrt(doubles.Sum(x => x * x));
                             break;
                         case KeepOption.AverageSquare:
-                            average2 = Math.Sqrt(doubles.Average(x => x*x));
+                            average2 = Math.Sqrt(doubles.Average(x => x * x));
                             break;
                         default:
                             throw new NotImplementedException();
                     }
                     // a*average2 + b == average
                     // a*delta2 == delta
-                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
-                    Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
-                    doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
+                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
+                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
+                    Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
+                    doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
 
-                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2*sizeof (double));
+                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2 * sizeof(double));
                     return image2.Convert<Gray, Byte>();
                 }
             }
@@ -357,10 +357,15 @@ namespace FFTTools
                 int n0 = image.Data.GetLength(0);
                 int n1 = image.Data.GetLength(1);
                 int n2 = image.Data.GetLength(2);
+                var input = new fftw_complexarray(length);
+                var output = new fftw_complexarray(length);
+                fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
+                    fftw_direction.Forward,
+                    fftw_flags.Estimate);
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
+                Buffer.BlockCopy(image.Data, 0, doubles, 0, length * sizeof(double));
                 double average = doubles.Average();
-                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
+                double delta = Math.Sqrt(doubles.Average(x => x * x) - average * average);
                 switch (_keepOption)
                 {
                     case KeepOption.AverageAndDelta:
@@ -369,20 +374,17 @@ namespace FFTTools
                         average = doubles.Sum();
                         break;
                     case KeepOption.Square:
-                        average = Math.Sqrt(doubles.Sum(x => x*x));
+                        average = Math.Sqrt(doubles.Sum(x => x * x));
                         break;
                     case KeepOption.AverageSquare:
-                        average = Math.Sqrt(doubles.Average(x => x*x));
+                        average = Math.Sqrt(doubles.Average(x => x * x));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
 
-                var input = new fftw_complexarray(doubles.Select(x => new Complex(x, 0)).ToArray());
-                var output = new fftw_complexarray(length);
-                fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Forward,
-                    fftw_flags.Estimate).Execute();
+                input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
+                forward.Execute();
                 Complex[] complex = output.GetData_Complex();
 
                 Size newSize = _newSize;
@@ -405,46 +407,44 @@ namespace FFTTools
                     int m0 = image2.Data.GetLength(0);
                     int m1 = image2.Data.GetLength(1);
                     int m2 = image2.Data.GetLength(2);
+                    var input2 = new fftw_complexarray(length2);
+                    var output2 = new fftw_complexarray(length2);
+                    fftw_plan backward = fftw_plan.dft_3d(m0, m1, m2, input2, output2,
+                        fftw_direction.Backward,
+                        fftw_flags.Estimate);
                     var complex2 = new Complex[length2];
 
                     var data = new Complex[n0, n1, n2];
                     var data2 = new Complex[m0, m1, m2];
 
-                    var buffer = new double[length*2];
+                    var buffer = new double[length * 2];
                     GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
                     GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                     IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
                     IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
                     Copy(data, data2);
 
-                    buffer = new double[length2*2];
+                    buffer = new double[length2 * 2];
                     complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
                     dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
                     complexPtr = complexHandle.AddrOfPinnedObject();
                     dataPtr = dataHandle.AddrOfPinnedObject();
-
                     Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                     Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-
                     complexHandle.Free();
                     dataHandle.Free();
 
-                    var input2 = new fftw_complexarray(complex2);
-                    var output2 = new fftw_complexarray(length2);
-                    fftw_plan.dft_3d(m0, m1, m2, input2, output2,
-                        fftw_direction.Backward,
-                        fftw_flags.Estimate).Execute();
+                    input2.SetData(complex2);
+                    backward.Execute();
                     doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
                     double average2 = doubles.Average();
-                    double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                    double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
                     switch (_keepOption)
                     {
                         case KeepOption.AverageAndDelta:
@@ -453,22 +453,22 @@ namespace FFTTools
                             average2 = doubles.Sum();
                             break;
                         case KeepOption.Square:
-                            average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                            average2 = Math.Sqrt(doubles.Sum(x => x * x));
                             break;
                         case KeepOption.AverageSquare:
-                            average2 = Math.Sqrt(doubles.Average(x => x*x));
+                            average2 = Math.Sqrt(doubles.Average(x => x * x));
                             break;
                         default:
                             throw new NotImplementedException();
                     }
                     // a*average2 + b == average
                     // a*delta2 == delta
-                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
-                    Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
-                    doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
+                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
+                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
+                    Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
+                    doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
 
-                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2*sizeof (double));
+                    Buffer.BlockCopy(doubles, 0, image2.Data, 0, length2 * sizeof(double));
                     return image2.Bitmap;
                 }
             }
