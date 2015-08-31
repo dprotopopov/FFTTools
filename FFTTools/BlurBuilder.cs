@@ -16,7 +16,22 @@ namespace FFTTools
     public class BlurBuilder : IDisposable
     {
         private readonly Size _blinderSize; // blinder size
+        private readonly int _filterStep;
         private readonly KeepOption _keepOption;
+        private readonly Mode _mode;
+
+        /// <summary>
+        ///     Builder constructor
+        /// </summary>
+        /// <param>Bitmap blur blinder size</param>
+        /// <param name="filterStep"></param>
+        /// <param name="keepOption"></param>
+        public BlurBuilder(int filterStep, KeepOption keepOption = KeepOption.AverageAndDelta)
+        {
+            _mode = Mode.FilterStep;
+            _filterStep = filterStep;
+            _keepOption = keepOption;
+        }
 
         /// <summary>
         ///     Builder constructor
@@ -25,6 +40,7 @@ namespace FFTTools
         /// <param name="keepOption"></param>
         public BlurBuilder(Size blinderSize, KeepOption keepOption = KeepOption.AverageAndDelta)
         {
+            _mode = Mode.BlinderSize;
             _blinderSize = blinderSize;
             _keepOption = keepOption;
         }
@@ -87,7 +103,21 @@ namespace FFTTools
 
                 Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-                Blind(data, _blinderSize);
+                switch (_mode)
+                {
+                    case Mode.BlinderSize:
+                        Blind(data, _blinderSize);
+                        break;
+                    case Mode.FilterStep:
+                        int filterStep = _filterStep;
+                        Size size = image.Size;
+                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
+                            MulDiv(size.Height, filterStep, filterStep + 1));
+                        Blind(data, blinderSize);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
                 Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
 
@@ -102,7 +132,7 @@ namespace FFTTools
                 doubles = output.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
                 double average2 = doubles.Average();
-                double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
+                double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
                 switch (_keepOption)
                 {
                     case KeepOption.AverageAndDelta:
@@ -111,22 +141,22 @@ namespace FFTTools
                         average2 = doubles.Sum();
                         break;
                     case KeepOption.Square:
-                        average2 = Math.Sqrt(doubles.Sum(x => x * x));
+                        average2 = Math.Sqrt(doubles.Sum(x => x*x));
                         break;
                     case KeepOption.AverageSquare:
-                        average2 = Math.Sqrt(doubles.Average(x => x * x));
+                        average2 = Math.Sqrt(doubles.Average(x => x*x));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
                 // a*average2 + b == average
                 // a*delta2 == delta
-                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
-                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
-                Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
-                doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
+                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
+                doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length * sizeof(double));
+                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
                 return image.Convert<Bgr, Byte>();
             }
         }
@@ -182,7 +212,21 @@ namespace FFTTools
 
                 Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-                Blind(data, _blinderSize);
+                switch (_mode)
+                {
+                    case Mode.BlinderSize:
+                        Blind(data, _blinderSize);
+                        break;
+                    case Mode.FilterStep:
+                        int filterStep = _filterStep;
+                        Size size = image.Size;
+                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
+                            MulDiv(size.Height, filterStep, filterStep + 1));
+                        Blind(data, blinderSize);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
                 Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
 
@@ -197,7 +241,7 @@ namespace FFTTools
                 doubles = output.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
                 double average2 = doubles.Average();
-                double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
+                double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
                 switch (_keepOption)
                 {
                     case KeepOption.AverageAndDelta:
@@ -206,22 +250,22 @@ namespace FFTTools
                         average2 = doubles.Sum();
                         break;
                     case KeepOption.Square:
-                        average2 = Math.Sqrt(doubles.Sum(x => x * x));
+                        average2 = Math.Sqrt(doubles.Sum(x => x*x));
                         break;
                     case KeepOption.AverageSquare:
-                        average2 = Math.Sqrt(doubles.Average(x => x * x));
+                        average2 = Math.Sqrt(doubles.Average(x => x*x));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
                 // a*average2 + b == average
                 // a*delta2 == delta
-                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
-                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
-                Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
-                doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
+                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
+                doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length * sizeof(double));
+                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
                 return image.Convert<Gray, Byte>();
             }
         }
@@ -306,7 +350,21 @@ namespace FFTTools
 
                 Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-                Blind(data, _blinderSize);
+                switch (_mode)
+                {
+                    case Mode.BlinderSize:
+                        Blind(data, _blinderSize);
+                        break;
+                    case Mode.FilterStep:
+                        int filterStep = _filterStep;
+                        Size size = image.Size;
+                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
+                            MulDiv(size.Height, filterStep, filterStep + 1));
+                        Blind(data, blinderSize);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
                 Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
                 Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
 
@@ -320,34 +378,52 @@ namespace FFTTools
                     fftw_flags.Estimate).Execute();
                 doubles = output.GetData_Complex().Select(x => x.Magnitude).ToArray();
 
-                    double average2 = doubles.Average();
-                    double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
-                    switch (_keepOption)
-                    {
-                        case KeepOption.AverageAndDelta:
-                            break;
-                        case KeepOption.Sum:
-                            average2 = doubles.Sum();
-                            break;
-                        case KeepOption.Square:
-                            average2 = Math.Sqrt(doubles.Sum(x => x * x));
-                            break;
-                        case KeepOption.AverageSquare:
-                            average2 = Math.Sqrt(doubles.Average(x => x * x));
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
-                    // a*average2 + b == average
-                    // a*delta2 == delta
-                    double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
-                    double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
-                    Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
-                    doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
+                double average2 = doubles.Average();
+                double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
+                switch (_keepOption)
+                {
+                    case KeepOption.AverageAndDelta:
+                        break;
+                    case KeepOption.Sum:
+                        average2 = doubles.Sum();
+                        break;
+                    case KeepOption.Square:
+                        average2 = Math.Sqrt(doubles.Sum(x => x*x));
+                        break;
+                    case KeepOption.AverageSquare:
+                        average2 = Math.Sqrt(doubles.Average(x => x*x));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+                // a*average2 + b == average
+                // a*delta2 == delta
+                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+                Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
+                doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length * sizeof(double));
+                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
                 return image.Bitmap;
             }
         }
+
+        /// <summary>
+        ///     ”множает Numerator на Number и делит pезультат на Denominator, окpугл€€ получаемое значение до длижайшего целого.
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="numerator"></param>
+        /// <param name="denominator"></param>
+        /// <returns></returns>
+        private static int MulDiv(int number, int numerator, int denominator)
+        {
+            return (int) (((long) number*numerator)/denominator);
+        }
+
+        private enum Mode
+        {
+            BlinderSize,
+            FilterStep
+        };
     }
 }
