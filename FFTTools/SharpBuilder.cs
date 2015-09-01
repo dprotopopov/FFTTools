@@ -59,110 +59,7 @@ namespace FFTTools
         {
             using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
             {
-                int length = image.Data.Length;
-                int n0 = image.Data.GetLength(0);
-                int n1 = image.Data.GetLength(1);
-                int n2 = image.Data.GetLength(2);
-
-                var input = new fftw_complexarray(length);
-                var output = new fftw_complexarray(length);
-                fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Forward,
-                    fftw_flags.Estimate);
-                fftw_plan backward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Backward,
-                    fftw_flags.Estimate);
-
-                var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
-                double average = doubles.Average();
-                double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
-                switch (_keepOption)
-                {
-                    case KeepOption.AverageAndDelta:
-                        break;
-                    case KeepOption.Sum:
-                        average = doubles.Sum();
-                        break;
-                    case KeepOption.Square:
-                        average = Math.Sqrt(doubles.Sum(x => x*x));
-                        break;
-                    case KeepOption.AverageSquare:
-                        average = Math.Sqrt(doubles.Average(x => x*x));
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-                forward.Execute();
-                Complex[] complex = output.GetData_Complex();
-
-                Complex level = complex[0];
-
-                var data = new Complex[n0, n1, n2];
-                var buffer = new double[length*2];
-
-                GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
-                GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
-                IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-
-                Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
-                Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-                switch (_mode)
-                {
-                    case Mode.BlinderSize:
-                        Blind(data, _blinderSize);
-                        break;
-                    case Mode.FilterStep:
-                        int filterStep = _filterStep;
-                        Size size = image.Size;
-                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
-                            MulDiv(size.Height, filterStep, filterStep + 1));
-                        Blind(data, blinderSize);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
-                Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-
-                complexHandle.Free();
-                dataHandle.Free();
-
-                complex[0] = level;
-
-                input.SetData(complex);
-                backward.Execute();
-                doubles = output.GetData_Complex().Select(x => x.Magnitude).ToArray();
-
-                double average2 = doubles.Average();
-                double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
-                switch (_keepOption)
-                {
-                    case KeepOption.AverageAndDelta:
-                        break;
-                    case KeepOption.Sum:
-                        average2 = doubles.Sum();
-                        break;
-                    case KeepOption.Square:
-                        average2 = Math.Sqrt(doubles.Sum(x => x*x));
-                        break;
-                    case KeepOption.AverageSquare:
-                        average2 = Math.Sqrt(doubles.Average(x => x*x));
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                // a*average2 + b == average
-                // a*delta2 == delta
-                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
-                Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
-                doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
-
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
+                image.Data = Sharp(image.Data);
                 return image.Convert<Bgr, Byte>();
             }
         }
@@ -171,14 +68,12 @@ namespace FFTTools
         ///     Sharp bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Sharped bitmap</returns>
-        public Image<Gray, Byte> Sharp(Image<Gray, Byte> bitmap)
+        private double[, ,] Sharp(double[, ,] imageData)
         {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
-            {
-                int length = image.Data.Length;
-                int n0 = image.Data.GetLength(0);
-                int n1 = image.Data.GetLength(1);
-                int n2 = image.Data.GetLength(2);
+                int length = imageData.Length;
+                int n0 = imageData.GetLength(0);
+                int n1 = imageData.GetLength(1);
+                int n2 = imageData.GetLength(2);
 
                 var input = new fftw_complexarray(length);
                 var output = new fftw_complexarray(length);
@@ -190,7 +85,7 @@ namespace FFTTools
                     fftw_flags.Estimate);
 
                 var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, length * sizeof(double));
+                Buffer.BlockCopy(imageData, 0, doubles, 0, length * sizeof(double));
                 double average = doubles.Average();
                 double delta = Math.Sqrt(doubles.Average(x => x * x) - average * average);
                 switch (_keepOption)
@@ -233,9 +128,8 @@ namespace FFTTools
                         break;
                     case Mode.FilterStep:
                         int filterStep = _filterStep;
-                        Size size = image.Size;
-                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
-                            MulDiv(size.Height, filterStep, filterStep + 1));
+                        var blinderSize = new Size(MulDiv(n1, filterStep, filterStep + 1),
+                            MulDiv(n0, filterStep, filterStep + 1));
                         Blind(data, blinderSize);
                         break;
                     default:
@@ -278,7 +172,19 @@ namespace FFTTools
                 Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
                 doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
 
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length * sizeof(double));
+                Buffer.BlockCopy(doubles, 0, imageData, 0, length * sizeof(double));
+                return imageData;
+        }
+
+        /// <summary>
+        ///     Sharp bitmap with the Fastest Fourier Transform
+        /// </summary>
+        /// <returns>Sharped bitmap</returns>
+        public Image<Gray, Byte> Sharp(Image<Gray, Byte> bitmap)
+        {
+            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
+            {
+                image.Data = Sharp(image.Data);
                 return image.Convert<Gray, Byte>();
             }
         }
@@ -317,110 +223,7 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             {
-                int length = image.Data.Length;
-                int n0 = image.Data.GetLength(0);
-                int n1 = image.Data.GetLength(1);
-                int n2 = image.Data.GetLength(2);
-
-                var input = new fftw_complexarray(length);
-                var output = new fftw_complexarray(length);
-                fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Forward,
-                    fftw_flags.Estimate);
-                fftw_plan backward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                    fftw_direction.Backward,
-                    fftw_flags.Estimate);
-
-                var doubles = new double[length];
-                Buffer.BlockCopy(image.Data, 0, doubles, 0, length * sizeof(double));
-                double average = doubles.Average();
-                double delta = Math.Sqrt(doubles.Average(x => x * x) - average * average);
-                switch (_keepOption)
-                {
-                    case KeepOption.AverageAndDelta:
-                        break;
-                    case KeepOption.Sum:
-                        average = doubles.Sum();
-                        break;
-                    case KeepOption.Square:
-                        average = Math.Sqrt(doubles.Sum(x => x * x));
-                        break;
-                    case KeepOption.AverageSquare:
-                        average = Math.Sqrt(doubles.Average(x => x * x));
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-                forward.Execute();
-                Complex[] complex = output.GetData_Complex();
-
-                Complex level = complex[0];
-
-                var data = new Complex[n0, n1, n2];
-                var buffer = new double[length * 2];
-
-                GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
-                GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
-                IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-
-                Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
-                Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-                switch (_mode)
-                {
-                    case Mode.BlinderSize:
-                        Blind(data, _blinderSize);
-                        break;
-                    case Mode.FilterStep:
-                        int filterStep = _filterStep;
-                        Size size = image.Size;
-                        var blinderSize = new Size(MulDiv(size.Width, filterStep, filterStep + 1),
-                            MulDiv(size.Height, filterStep, filterStep + 1));
-                        Blind(data, blinderSize);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
-                Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-
-                complexHandle.Free();
-                dataHandle.Free();
-
-                complex[0] = level;
-
-                input.SetData(complex);
-                backward.Execute();
-                doubles = output.GetData_Complex().Select(x => x.Magnitude).ToArray();
-
-                double average2 = doubles.Average();
-                double delta2 = Math.Sqrt(doubles.Average(x => x * x) - average2 * average2);
-                switch (_keepOption)
-                {
-                    case KeepOption.AverageAndDelta:
-                        break;
-                    case KeepOption.Sum:
-                        average2 = doubles.Sum();
-                        break;
-                    case KeepOption.Square:
-                        average2 = Math.Sqrt(doubles.Sum(x => x * x));
-                        break;
-                    case KeepOption.AverageSquare:
-                        average2 = Math.Sqrt(doubles.Average(x => x * x));
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                // a*average2 + b == average
-                // a*delta2 == delta
-                double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta / delta2) : (average / average2);
-                double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a * average2) : 0;
-                Debug.Assert(Math.Abs(a * average2 + b - average) < 0.1);
-                doubles = doubles.Select(x => Math.Round(a * x + b)).ToArray();
-
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length * sizeof(double));
+                image.Data = Sharp(image.Data);
                 return image.Bitmap;
             }
         }

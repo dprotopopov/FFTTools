@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using FFTWSharp;
@@ -96,20 +95,20 @@ namespace FFTTools
 
             var matrix = new Matrix<double>(n0, n1);
 
-            double[, ,] patternData = _patternImage.Data;
-            double[, ,] imageData = image.Data;
+            double[,,] patternData = _patternImage.Data;
+            double[,,] imageData = image.Data;
             double[,] data = matrix.Data;
 
             var doubles = new double[length];
 
             // Calculate Divisor
             Copy(patternData, data);
-            Buffer.BlockCopy(data, 0, doubles, 0, length*sizeof(double));
+            Buffer.BlockCopy(data, 0, doubles, 0, length*sizeof (double));
             input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
             forward.Execute();
             Complex[] complex = output.GetData_Complex();
 
-            Buffer.BlockCopy(imageData, 0, doubles, 0, length * sizeof(double));
+            Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
             input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
             forward.Execute();
 
@@ -120,7 +119,7 @@ namespace FFTTools
             if (_fastMode)
             {
                 // Fast Result
-                Buffer.BlockCopy(doubles1.ToArray(), 0, data, 0, length * sizeof(double));
+                Buffer.BlockCopy(doubles1.ToArray(), 0, data, 0, length*sizeof (double));
                 return matrix;
             }
 
@@ -130,7 +129,7 @@ namespace FFTTools
             complex = output.GetData_Complex();
 
             CopyAndReplace(_patternImage.Data, data);
-            Buffer.BlockCopy(data, 0, doubles, 0, length * sizeof(double));
+            Buffer.BlockCopy(data, 0, doubles, 0, length*sizeof (double));
             input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
             forward.Execute();
 
@@ -139,7 +138,8 @@ namespace FFTTools
             IEnumerable<double> doubles2 = output.GetData_Complex().Select(x => x.Magnitude);
 
             // Result
-            Buffer.BlockCopy(doubles1.Zip(doubles2, (x, y) => (f + x * x) / (f + y)).ToArray(), 0, data, 0, length * sizeof(double));
+            Buffer.BlockCopy(doubles1.Zip(doubles2, (x, y) => (f + x*x)/(f + y)).ToArray(), 0, data, 0,
+                length*sizeof (double));
             return matrix;
         }
 
