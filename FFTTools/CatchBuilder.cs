@@ -42,16 +42,6 @@ namespace FFTTools
         ///     Catch pattern bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Array of values</returns>
-        public Matrix<double> Catch(Bitmap bitmap)
-        {
-            using (var image = new Image<Gray, Byte>(bitmap))
-                return Catch(image);
-        }
-
-        /// <summary>
-        ///     Catch pattern bitmap with the Fastest Fourier Transform
-        /// </summary>
-        /// <returns>Array of values</returns>
         public Matrix<double> Catch(Image<Bgr, Byte> bitmap)
         {
             using (Image<Gray, Byte> image = bitmap.Convert<Gray, Byte>())
@@ -112,7 +102,7 @@ namespace FFTTools
             input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
             forward.Execute();
 
-            input.SetData(complex.Zip(output.GetData_Complex(), (x, y) => x*y).ToArray());
+            input.SetData(output.GetData_Complex().Zip(complex, (x, y) => x*Complex.Conjugate(y)).ToArray());
             backward.Execute();
             IEnumerable<double> doubles1 = output.GetData_Complex().Select(x => x.Magnitude);
 
@@ -133,7 +123,7 @@ namespace FFTTools
             input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
             forward.Execute();
 
-            input.SetData(complex.Zip(output.GetData_Complex(), (x, y) => x*y).ToArray());
+            input.SetData(complex.Zip(output.GetData_Complex(), (x, y) => x*Complex.Conjugate(y)).ToArray());
             backward.Execute();
             IEnumerable<double> doubles2 = output.GetData_Complex().Select(x => x.Magnitude);
 
@@ -160,12 +150,12 @@ namespace FFTTools
 
             for (int i = 0; i < m0; i++)
                 for (int j = 0; j < m1; j++)
-                    output[(n0 - i)%n0, (n1 - j)%n1] = input[i, j, 0];
+                    output[i, j] = input[i, j, 0];
 
             for (int k = 1; k < m2; k++)
                 for (int i = 0; i < m0; i++)
                     for (int j = 0; j < m1; j++)
-                        output[(n0 - i)%n0, (n1 - j)%n1] += input[i, j, k];
+                        output[i, j] += input[i, j, k];
         }
 
         /// <summary>
@@ -187,7 +177,7 @@ namespace FFTTools
 
             for (int i = 0; i < m0; i++)
                 for (int j = 0; j < m1; j++)
-                    output[(n0 - i)%n0, (n1 - j)%n1] = value;
+                    output[i, j] = value;
         }
 
         /// <summary>
@@ -215,5 +205,16 @@ namespace FFTTools
                 }
             }
         }
+
+        /// <summary>
+        ///     Catch pattern bitmap with the Fastest Fourier Transform
+        /// </summary>
+        /// <returns>Array of values</returns>
+        public Matrix<double> Catch(Bitmap bitmap)
+        {
+            using (var image = new Image<Gray, Byte>(bitmap))
+                return Catch(image);
+        }
+
     }
 }
