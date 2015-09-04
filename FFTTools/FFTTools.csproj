@@ -117,10 +117,13 @@
   <ItemGroup>
     <Compile Include="BlurBuilder.cs" />
     <Compile Include="CatchBuilder.cs" />
+    <Compile Include="ConvolutionBuilder.cs" />
+    <Compile Include="FunctionType.cs" />
     <Compile Include="KeepOption.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharpBuilder.cs" />
     <Compile Include="StretchBuilder.cs" />
+    <Compile Include="Utils\BinomialBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="x64\cudart64_65.dll" />
