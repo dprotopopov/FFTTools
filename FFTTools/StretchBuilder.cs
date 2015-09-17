@@ -11,12 +11,12 @@ namespace FFTTools
     /// <summary>
     ///     Resize bitmap with the Fastest Fourier Transform
     /// </summary>
-    public class StretchBuilder : BuilderBase, IDisposable
+    public class StretchBuilder : BuilderBase, IBuilder
     {
+        private readonly FilterMode _filterMode;
+        private readonly Size _filterSize;
         private readonly int _filterStep;
         private readonly KeepOption _keepOption;
-        private readonly Mode _mode;
-        private readonly Size _newSize;
 
         /// <summary>
         ///     Builder constructor
@@ -25,7 +25,7 @@ namespace FFTTools
         /// <param name="keepOption"></param>
         public StretchBuilder(int filterStep, KeepOption keepOption = KeepOption.AverageAndDelta)
         {
-            _mode = Mode.FilterStep;
+            _filterMode = FilterMode.FilterStep;
             _filterStep = filterStep;
             _keepOption = keepOption;
         }
@@ -33,12 +33,12 @@ namespace FFTTools
         /// <summary>
         ///     Builder constructor
         /// </summary>
-        /// <param name="newSize">Bitmap new size</param>
+        /// <param name="filterSize">Bitmap new size</param>
         /// <param name="keepOption"></param>
-        public StretchBuilder(Size newSize, KeepOption keepOption = KeepOption.AverageAndDelta)
+        public StretchBuilder(Size filterSize, KeepOption keepOption = KeepOption.AverageAndDelta)
         {
-            _mode = Mode.NewSize;
-            _newSize = newSize;
+            _filterMode = FilterMode.FilterSize;
+            _filterSize = filterSize;
             _keepOption = keepOption;
         }
 
@@ -47,6 +47,11 @@ namespace FFTTools
         /// </summary>
         public void Dispose()
         {
+        }
+
+        public Bitmap ToBitmap(Bitmap source)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -133,12 +138,12 @@ namespace FFTTools
             double delta;
             AverageAndDelta(out average, out delta, doubles, _keepOption);
 
-            Size newSize = _newSize;
-            switch (_mode)
+            Size newSize = _filterSize;
+            switch (_filterMode)
             {
-                case Mode.NewSize:
+                case FilterMode.FilterSize:
                     break;
-                case Mode.FilterStep:
+                case FilterMode.FilterStep:
                     int filterStep = _filterStep;
                     newSize = new Size(MulDiv(n1, filterStep + filterStep + 1, filterStep + filterStep),
                         MulDiv(n0, filterStep + filterStep + 1, filterStep + filterStep));
@@ -205,25 +210,7 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             using (var image2 = new Image<Bgr, double>(Stretch(image.Data)))
-                return image2.Bitmap;
+                return image2.Convert<Bgr, Byte>().ToBitmap();
         }
-
-        /// <summary>
-        ///     Умножает Numerator на Number и делит pезультат на Denominator, окpугляя получаемое значение до длижайшего целого.
-        /// </summary>
-        /// <param name="number"></param>
-        /// <param name="numerator"></param>
-        /// <param name="denominator"></param>
-        /// <returns></returns>
-        private static int MulDiv(int number, int numerator, int denominator)
-        {
-            return (int) (((long) number*numerator)/denominator);
-        }
-
-        private enum Mode
-        {
-            NewSize,
-            FilterStep
-        };
     }
 }
