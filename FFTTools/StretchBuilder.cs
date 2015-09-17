@@ -3,17 +3,15 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using FFTWSharp;
 
 namespace FFTTools
 {
     /// <summary>
     ///     Resize bitmap with the Fastest Fourier Transform
     /// </summary>
-    public class StretchBuilder : IDisposable
+    public class StretchBuilder : BuilderBase, IDisposable
     {
         private readonly int _filterStep;
         private readonly KeepOption _keepOption;
@@ -88,6 +86,36 @@ namespace FFTTools
         }
 
         /// <summary>
+        ///     Copy arrays
+        /// </summary>
+        /// <param name="n0">Source array size</param>
+        /// <param name="n1">Source array size</param>
+        /// <param name="m0">Destination array size</param>
+        /// <param name="m1">Destination array size</param>
+        /// <param name="input">Input array</param>
+        /// <param name="output">Output array</param>
+        /// <param name="nm2">Source/Destination array size</param>
+        private static void Copy(int n0, int n1, int m0, int m1, Complex[] input, Complex[] output, int nm2)
+        {
+            int ex0 = Math.Min(n0, m0)/2;
+            int ex1 = Math.Min(n1, m1)/2;
+            for (int i = 0; i <= ex0; i++)
+            {
+                for (int j = 0; j <= ex1; j++)
+                {
+                    int ni = n0 - i - 1;
+                    int nj = n1 - j - 1;
+                    int mi = m0 - i - 1;
+                    int mj = m1 - j - 1;
+                    Array.Copy(input, (i*n1 + j)*nm2, output, (i*m1 + j)*nm2, nm2);
+                    Array.Copy(input, (ni*n1 + j)*nm2, output, (mi*m1 + j)*nm2, nm2);
+                    Array.Copy(input, (i*n1 + nj)*nm2, output, (i*m1 + mj)*nm2, nm2);
+                    Array.Copy(input, (ni*n1 + nj)*nm2, output, (mi*m1 + mj)*nm2, nm2);
+                }
+            }
+        }
+
+        /// <summary>
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
@@ -97,35 +125,13 @@ namespace FFTTools
             int n0 = imageData.GetLength(0);
             int n1 = imageData.GetLength(1);
             int n2 = imageData.GetLength(2);
-            var input = new fftw_complexarray(length);
-            var output = new fftw_complexarray(length);
-            fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                fftw_direction.Forward,
-                fftw_flags.Estimate);
+
             var doubles = new double[length];
             Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
-            double average = doubles.Average();
-            double delta = Math.Sqrt(doubles.Average(x => x*x) - average*average);
-            switch (_keepOption)
-            {
-                case KeepOption.AverageAndDelta:
-                    break;
-                case KeepOption.Sum:
-                    average = doubles.Sum();
-                    break;
-                case KeepOption.Square:
-                    average = Math.Sqrt(doubles.Sum(x => x*x));
-                    break;
-                case KeepOption.AverageSquare:
-                    average = Math.Sqrt(doubles.Average(x => x*x));
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
 
-            input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-            forward.Execute();
-            Complex[] complex = output.GetData_Complex();
+            double average;
+            double delta;
+            AverageAndDelta(out average, out delta, doubles, _keepOption);
 
             Size newSize = _newSize;
             switch (_mode)
@@ -140,65 +146,24 @@ namespace FFTTools
                 default:
                     throw new NotImplementedException();
             }
+
             var imageData2 = new double[newSize.Height, newSize.Width, n2];
             int length2 = imageData2.Length;
             int m0 = imageData2.GetLength(0);
             int m1 = imageData2.GetLength(1);
             int m2 = imageData2.GetLength(2);
-            var input2 = new fftw_complexarray(length2);
-            var output2 = new fftw_complexarray(length2);
-            fftw_plan backward = fftw_plan.dft_3d(m0, m1, m2, input2, output2,
-                fftw_direction.Backward,
-                fftw_flags.Estimate);
+
+            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             var complex2 = new Complex[length2];
+            Fourier(n0, n1, n2, complex, FourierDirection.Forward);
+            Copy(n0, n1, m0, m1, complex, complex2, n2);
+            Fourier(m0, m1, m2, complex2, FourierDirection.Backward);
+            doubles = complex2.Select(x => x.Magnitude).ToArray();
 
-            var data = new Complex[n0, n1, n2];
-            var data2 = new Complex[m0, m1, m2];
+            double average2;
+            double delta2;
+            AverageAndDelta(out average2, out delta2, doubles, _keepOption);
 
-            var buffer = new double[length*2];
-            GCHandle complexHandle = GCHandle.Alloc(complex, GCHandleType.Pinned);
-            GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            IntPtr complexPtr = complexHandle.AddrOfPinnedObject();
-            IntPtr dataPtr = dataHandle.AddrOfPinnedObject();
-            Marshal.Copy(complexPtr, buffer, 0, buffer.Length);
-            Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
-            complexHandle.Free();
-            dataHandle.Free();
-
-            Copy(data, data2);
-
-            buffer = new double[length2*2];
-            complexHandle = GCHandle.Alloc(complex2, GCHandleType.Pinned);
-            dataHandle = GCHandle.Alloc(data2, GCHandleType.Pinned);
-            complexPtr = complexHandle.AddrOfPinnedObject();
-            dataPtr = dataHandle.AddrOfPinnedObject();
-            Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
-            Marshal.Copy(buffer, 0, complexPtr, buffer.Length);
-            complexHandle.Free();
-            dataHandle.Free();
-
-            input2.SetData(complex2);
-            backward.Execute();
-            doubles = output2.GetData_Complex().Select(x => x.Magnitude).ToArray();
-
-            double average2 = doubles.Average();
-            double delta2 = Math.Sqrt(doubles.Average(x => x*x) - average2*average2);
-            switch (_keepOption)
-            {
-                case KeepOption.AverageAndDelta:
-                    break;
-                case KeepOption.Sum:
-                    average2 = doubles.Sum();
-                    break;
-                case KeepOption.Square:
-                    average2 = Math.Sqrt(doubles.Sum(x => x*x));
-                    break;
-                case KeepOption.AverageSquare:
-                    average2 = Math.Sqrt(doubles.Average(x => x*x));
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
             // a*average2 + b == average
             // a*delta2 == delta
             double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);

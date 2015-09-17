@@ -32,7 +32,7 @@ namespace fftcatcher
             try
             {
                 var bitmap = pictureEditFile.Image as Bitmap;
-                if (bitmap == null) return;
+                if (bitmap == null) throw new Exception("Нет изображения");
                 using (var image = new Image<Bgr, double>(bitmap))
                 {
                     double[,,] data = image.Data;
@@ -52,8 +52,9 @@ namespace fftcatcher
                     siInfo.Caption = sb.ToString();
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                XtraMessageBox.Show(exception.Message);
             }
         }
 
@@ -97,7 +98,7 @@ namespace fftcatcher
             {
                 var bitmap = pictureEditFile.Image as Bitmap;
                 var pattern = pictureEditPattern.Image as Bitmap;
-                if (bitmap == null || pattern == null) return;
+                if (bitmap == null || pattern == null) throw new Exception("Нет изображения");
                 using (var builder = new CatchBuilder(pattern))
                 {
                     Matrix<double> matrix = builder.Catch(bitmap);
@@ -131,6 +132,22 @@ namespace fftcatcher
                 if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
                 var bitmap = new Bitmap(openFileDialog1.FileName);
                 pictureEditPattern.Image = bitmap;
+            }
+            catch (Exception exception)
+            {
+                XtraMessageBox.Show(exception.Message);
+            }
+        }
+
+        private void vizualize_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            try
+            {
+                var bitmap = pictureEditFile.Image as Bitmap;
+                var pattern = pictureEditPattern.Image as Bitmap;
+                if (bitmap == null || pattern == null) throw new Exception("Нет изображения");
+                using (var builder = new CatchBuilder(pattern))
+                    pictureEditFile.Image = builder.ToBitmap(bitmap);
             }
             catch (Exception exception)
             {

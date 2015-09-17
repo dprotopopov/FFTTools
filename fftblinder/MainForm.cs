@@ -127,8 +127,8 @@ namespace fftblinder
                     Buffer.BlockCopy(data, 0, bytes, 0, length);
                     double average = bytes.Average(x => (double) x);
                     double delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
-                    double minValue = bytes.Min(x => (double)x);
-                    double maxValue = bytes.Max(x => (double)x);
+                    double minValue = bytes.Min(x => (double) x);
+                    double maxValue = bytes.Max(x => (double) x);
                     var sb = new StringBuilder();
                     sb.AppendLine(string.Format("Length {0}", length));
                     sb.AppendLine(string.Format("Average {0}", average));
@@ -140,6 +140,52 @@ namespace fftblinder
             }
             catch (Exception)
             {
+            }
+        }
+
+        private void blurVizualize_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            try
+            {
+                var bitmap = pictureEdit1.Image as Bitmap;
+                if (bitmap == null) return;
+                Size size = bitmap.Size;
+                using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
+                {
+                    if (blinderDialog.ShowDialog() != DialogResult.OK) return;
+
+                    Size blinderSize = blinderDialog.BlinderSize;
+
+                    using (var builder = new BlurBuilder(blinderSize))
+                        pictureEdit1.Image = builder.ToBitmap(bitmap);
+                }
+            }
+            catch (Exception exception)
+            {
+                XtraMessageBox.Show(exception.Message);
+            }
+        }
+
+        private void sharpVizualize_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            try
+            {
+                var bitmap = pictureEdit1.Image as Bitmap;
+                if (bitmap == null) return;
+                Size size = bitmap.Size;
+                using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
+                {
+                    if (blinderDialog.ShowDialog() != DialogResult.OK) return;
+
+                    Size blinderSize = blinderDialog.BlinderSize;
+
+                    using (var builder = new SharpBuilder(blinderSize))
+                        pictureEdit1.Image = builder.ToBitmap(bitmap);
+                }
+            }
+            catch (Exception exception)
+            {
+                XtraMessageBox.Show(exception.Message);
             }
         }
     }

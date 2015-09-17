@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 
 [assembly: AssemblyTitle("fftblinder")]
-[assembly: AssemblyDescription("Blur bitmap with the Fastest Fourier Transform")]
+[assembly: AssemblyDescription("Blur or sharp bitmap with the Fastest Fourier Transform")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dmitry Protopopov")]
 [assembly: AssemblyProduct("fftblinder")]

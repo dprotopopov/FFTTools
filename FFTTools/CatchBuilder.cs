@@ -1,19 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using FFTWSharp;
 
 namespace FFTTools
 {
     /// <summary>
     ///     Catch pattern bitmap with the Fastest Fourier Transform
     /// </summary>
-    public class CatchBuilder : IDisposable
+    public class CatchBuilder : BuilderBase, IBuilder
     {
         private readonly bool _fastMode;
         private readonly Image<Gray, double> _patternImage;
@@ -36,6 +34,23 @@ namespace FFTTools
         /// </summary>
         public void Dispose()
         {
+        }
+
+        public Bitmap ToBitmap(Bitmap source)
+        {
+            Matrix<double> matrix = Catch(source);
+            int n0 = matrix.Data.GetLength(0); // Image height
+            int n1 = matrix.Data.GetLength(1); // Image width
+            int length = matrix.Data.Length;
+            var doubles = new double[length];
+            Buffer.BlockCopy(matrix.Data, 0, doubles, 0, length*sizeof (double));
+            double max = doubles.Max();
+            doubles = doubles.Select(x => Math.Round(255.0*x/max)).ToArray();
+            using (var image = new Image<Gray, double>(n1, n0))
+            {
+                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
+                return image.Convert<Bgr, Byte>().ToBitmap();
+            }
         }
 
         /// <summary>
@@ -65,23 +80,12 @@ namespace FFTTools
         private Matrix<double> Catch(Image<Gray, double> image)
         {
             const double f = 1.0;
-            int length = image.Data.Length;
-            int n0 = image.Data.GetLength(0);
-            int n1 = image.Data.GetLength(1);
-            int n2 = image.Data.GetLength(2);
+            int length = image.Data.Length; // Image length = height*width*colors
+            int n0 = image.Data.GetLength(0); // Image height
+            int n1 = image.Data.GetLength(1); // Image width
+            int n2 = image.Data.GetLength(2); // Image colors
 
             Debug.Assert(n2 == 1);
-
-            // Allocate FFTW structures
-            var input = new fftw_complexarray(length);
-            var output = new fftw_complexarray(length);
-
-            fftw_plan forward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                fftw_direction.Forward,
-                fftw_flags.Estimate);
-            fftw_plan backward = fftw_plan.dft_3d(n0, n1, n2, input, output,
-                fftw_direction.Backward,
-                fftw_flags.Estimate);
 
             var matrix = new Matrix<double>(n0, n1);
 
@@ -89,43 +93,44 @@ namespace FFTTools
             double[,,] imageData = image.Data;
             double[,] data = matrix.Data;
 
+            Array.Clear(data, 0, data.Length);
             var doubles = new double[length];
 
             // Calculate Divisor
             Copy(patternData, data);
             Buffer.BlockCopy(data, 0, doubles, 0, length*sizeof (double));
-            input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-            forward.Execute();
-            Complex[] complex = output.GetData_Complex();
-
+            Complex[] first = doubles.Select(x => new Complex(x, 0)).ToArray();
             Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
-            input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-            forward.Execute();
+            Complex[] second = doubles.Select(x => new Complex(x, 0)).ToArray();
 
-            input.SetData(output.GetData_Complex().Zip(complex, (x, y) => x*Complex.Conjugate(y)).ToArray());
-            backward.Execute();
-            IEnumerable<double> doubles1 = output.GetData_Complex().Select(x => x.Magnitude);
+            Fourier(n0, n1, n2, first, FourierDirection.Forward);
+            Fourier(n0, n1, n2, second, FourierDirection.Forward);
+
+            first = first.Select(Complex.Conjugate).Zip(second,
+                (x, y) => x*y).ToArray();
+
+            Fourier(n0, n1, n2, first, FourierDirection.Backward);
+            double[] doubles1 = first.Select(x => x.Magnitude).ToArray();
 
             if (_fastMode)
             {
                 // Fast Result
-                Buffer.BlockCopy(doubles1.ToArray(), 0, data, 0, length*sizeof (double));
+                Buffer.BlockCopy(doubles1, 0, data, 0, length*sizeof (double));
                 return matrix;
             }
 
             // Calculate Divider (aka Power)
-            input.SetData(doubles.Select(x => new Complex(x*x, 0)).ToArray());
-            forward.Execute();
-            complex = output.GetData_Complex();
-
             CopyAndReplace(_patternImage.Data, data);
             Buffer.BlockCopy(data, 0, doubles, 0, length*sizeof (double));
-            input.SetData(doubles.Select(x => new Complex(x, 0)).ToArray());
-            forward.Execute();
+            first = doubles.Select(x => new Complex(x, 0)).ToArray();
+            Fourier(n0, n1, n2, first, FourierDirection.Forward);
 
-            input.SetData(complex.Zip(output.GetData_Complex(), (x, y) => x*Complex.Conjugate(y)).ToArray());
-            backward.Execute();
-            IEnumerable<double> doubles2 = output.GetData_Complex().Select(x => x.Magnitude);
+            first = first.Select(Complex.Conjugate).Zip(second,
+                (x, y) => x*y).Select(Complex.Conjugate).Zip(second,
+                    (x, y) => x*y).ToArray();
+
+            Fourier(n0, n1, n2, first, FourierDirection.Backward);
+            double[] doubles2 = first.Select(x => x.Magnitude).ToArray();
 
             // Result
             Buffer.BlockCopy(doubles1.Zip(doubles2, (x, y) => (f + x*x)/(f + y)).ToArray(), 0, data, 0,
@@ -135,7 +140,6 @@ namespace FFTTools
 
         /// <summary>
         ///     Copy 3D array to 2D array (sizes can be different)
-        ///     Flip copied data
         ///     Reduce last dimension
         /// </summary>
         /// <param name="input">Input array</param>
@@ -148,20 +152,18 @@ namespace FFTTools
             int m1 = Math.Min(n1, input.GetLength(1));
             int m2 = input.GetLength(2);
 
+            var buffer = new double[m2];
             for (int i = 0; i < m0; i++)
                 for (int j = 0; j < m1; j++)
-                    output[i, j] = input[i, j, 0];
-
-            for (int k = 1; k < m2; k++)
-                for (int i = 0; i < m0; i++)
-                    for (int j = 0; j < m1; j++)
-                        output[i, j] += input[i, j, k];
+                {
+                    Buffer.BlockCopy(input, (i*m1 + j)*m2*sizeof (double), buffer, 0, m2*sizeof (double));
+                    output[i, j] = buffer.Sum();
+                }
         }
 
         /// <summary>
         ///     Copy 3D array to 2D array (sizes can be different)
         ///     Replace items copied by value
-        ///     Flip copied data
         ///     Reduce last dimension
         /// </summary>
         /// <param name="input">Input array</param>
@@ -190,16 +192,17 @@ namespace FFTTools
         public void Max(Matrix<double> matrix, out int x, out int y, out double value)
         {
             double[,] data = matrix.Data;
-            int n0 = data.GetLength(0);
-            int n1 = data.GetLength(1);
+            int n0 = data.GetLength(0); // Image height
+            int n1 = data.GetLength(1); // Image width
             value = data[0, 0];
             x = y = 0;
             for (int i = 0; i < n0; i++)
             {
                 for (int j = 0; j < n1; j++)
                 {
-                    if (data[i, j] < value) continue;
-                    value = data[i, j];
+                    double t = data[i, j];
+                    if (t < value) continue;
+                    value = t;
                     x = j;
                     y = i;
                 }
@@ -215,6 +218,5 @@ namespace FFTTools
             using (var image = new Image<Gray, Byte>(bitmap))
                 return Catch(image);
         }
-
     }
 }
