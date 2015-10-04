@@ -1,3 +1,3 @@
 [submodule "FFTWSharp"]
 	path = FFTWSharp
-	url = https://github.com/tszalay/FFTWSharp.git
+	url = https://github.com/dprotopopov/FFTWSharp.git
