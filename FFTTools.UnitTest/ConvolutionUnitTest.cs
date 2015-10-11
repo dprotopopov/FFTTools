@@ -12,17 +12,17 @@ namespace FFTTools.UnitTest
         {
             const int count = 10;
             var values = new double[count];
-            var vxv = new double[2*values.Length-1];
+            var vxv = new double[2*values.Length - 1];
             Array.Clear(values, 0, values.Length);
             Array.Clear(vxv, 0, vxv.Length);
 
             BinomialBuilder.GetDoubles(values);
 
-            for (int i = 0; i < values.Length; i++)
-                for (int j = 0; j < values.Length; j++)
-                    vxv[i + j] += values[i] * values[j];
+            for (var i = 0; i < values.Length; i++)
+                for (var j = 0; j < values.Length; j++)
+                    vxv[i + j] += values[i]*values[j];
 
-            var fxf = new double[2 * values.Length];
+            var fxf = new double[2*values.Length];
             ConvolutionBuilder.Convolution(values, fxf);
 
             Console.WriteLine(
