@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -79,26 +80,26 @@ namespace FFTTools
         /// <returns></returns>
         public Bitmap ToBitmap(Bitmap source)
         {
-            int width = source.Width;
-            int height = source.Height;
-            int length = width*height;
+            var width = source.Width;
+            var height = source.Height;
+            var length = width*height;
 
             var kernel = new Complex[height, width]; // Kernel values
             GetKernelFourier(kernel);
             Fourier(kernel, FourierDirection.Backward);
 
             var doubles = new double[kernel.Length];
-            int index = 0;
-            for (int i = 0; i < height; i++)
-                for (int j = 0; j < width; j++)
+            var index = 0;
+            for (var i = 0; i < height; i++)
+                for (var j = 0; j < width; j++)
                     doubles[index++] = 1 + kernel[i, j].Magnitude;
 
-            double max = doubles.Max();
+            var max = doubles.Max();
             doubles = doubles.Select(x => Math.Round(255.0*x/max)).ToArray();
             using (var image = new Image<Gray, double>(width, height))
             {
                 Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
-                return image.Convert<Bgr, Byte>().ToBitmap();
+                return image.Convert<Bgr, byte>().ToBitmap();
             }
         }
 
@@ -109,21 +110,21 @@ namespace FFTTools
         /// <param name="output">Output array</param>
         private static void Copy(Complex[,] input, Complex[,] output)
         {
-            int n0 = output.GetLength(0);
-            int n1 = output.GetLength(1);
-            int m0 = Math.Min(n0, input.GetLength(0));
-            int m1 = Math.Min(n1, input.GetLength(1));
+            var n0 = output.GetLength(0);
+            var n1 = output.GetLength(1);
+            var m0 = Math.Min(n0, input.GetLength(0));
+            var m1 = Math.Min(n1, input.GetLength(1));
 
-            for (int i = 0; i < m0; i++)
-                for (int j = 0; j < m1; j++)
+            for (var i = 0; i < m0; i++)
+                for (var j = 0; j < m1; j++)
                     output[i, j] = input[i, j];
         }
 
         private void GetKernelFourier(Complex[,] kernelFourier)
         {
-            int length = kernelFourier.Length; // Kernel length = height*width
-            int n0 = kernelFourier.GetLength(0); // Kernel height
-            int n1 = kernelFourier.GetLength(1); // Kernel width
+            var length = kernelFourier.Length; // Kernel length = height*width
+            var n0 = kernelFourier.GetLength(0); // Kernel height
+            var n1 = kernelFourier.GetLength(1); // Kernel width
             switch (_filterMode)
             {
                 case FilterMode.FilterKernel:
@@ -133,7 +134,7 @@ namespace FFTTools
                     Fill(kernelFourier, _filterSize, Complex.One);
                     break;
                 case FilterMode.FilterStep:
-                    int filterStep = _filterStep;
+                    var filterStep = _filterStep;
                     var filterSize = new Size(MulDiv(n1, 1, filterStep + 1),
                         MulDiv(n0, 1, filterStep + 1));
                     Fill(kernelFourier, filterSize, Complex.One);
@@ -142,10 +143,10 @@ namespace FFTTools
                     throw new NotImplementedException();
             }
             Fourier(kernelFourier, FourierDirection.Forward);
-            for (int i = 0; i < n0; i++)
-                for (int j = 0; j < n1; j++)
+            for (var i = 0; i < n0; i++)
+                for (var j = 0; j < n1; j++)
                 {
-                    Complex value = kernelFourier[i, j];
+                    var value = kernelFourier[i, j];
                     value = Complex.Pow(value*Complex.Conjugate(value), _filterPower/2);
                     kernelFourier[i, j] = value;
                 }
@@ -155,13 +156,15 @@ namespace FFTTools
         ///     Filter bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Blurred bitmap</returns>
-        private double[,,] Apply(double[,,] imageData, FilterAction filterAction)
+        private Array Apply(Array data, FilterAction filterAction)
         {
-            Complex f = Complex.One;
-            int length = imageData.Length; // Image length = height*width*colors
-            int n0 = imageData.GetLength(0); // Image height
-            int n1 = imageData.GetLength(1); // Image width
-            int n2 = imageData.GetLength(2); // Image colors
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+            var f = Complex.One;
+            var length = data.Length; // Image length = height*width*colors
+            var n0 = data.GetLength(0); // Image height
+            var n1 = data.GetLength(1); // Image width
+            var n2 = data.GetLength(2); // Image colors
 
             var kernelFourier = new Complex[n0, n1]; // Filter values
             GetKernelFourier(kernelFourier);
@@ -169,34 +172,35 @@ namespace FFTTools
             // Filter main loop
 
             var doubles = new double[length];
-            Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
+
+            Marshal.Copy(handle.AddrOfPinnedObject(), doubles, 0, doubles.Length);
 
             double average;
             double delta;
             AverageAndDelta(out average, out delta, doubles, _keepOption);
 
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
 
             // Apply filter values
-            int index = 0;
+            var index = 0;
             switch (filterAction)
             {
                 case FilterAction.Multiply:
-                    for (int i = 0; i < n0; i++)
-                        for (int j = 0; j < n1; j++)
+                    for (var i = 0; i < n0; i++)
+                        for (var j = 0; j < n1; j++)
                         {
-                            Complex value = kernelFourier[i, j];
-                            for (int k = 0; k < n2; k++)
+                            var value = kernelFourier[i, j];
+                            for (var k = 0; k < n2; k++)
                                 complex[index++] *= f + value;
                         }
                     break;
                 case FilterAction.Divide:
-                    for (int i = 0; i < n0; i++)
-                        for (int j = 0; j < n1; j++)
+                    for (var i = 0; i < n0; i++)
+                        for (var j = 0; j < n1; j++)
                         {
-                            Complex value = kernelFourier[i, j];
-                            for (int k = 0; k < n2; k++)
+                            var value = kernelFourier[i, j];
+                            for (var k = 0; k < n2; k++)
                                 complex[index++] /= f + value;
                         }
                     break;
@@ -213,38 +217,50 @@ namespace FFTTools
 
             // a*average2 + b == average
             // a*delta2 == delta
-            double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-            double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+            var a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+            var b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
             Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
             doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-            Buffer.BlockCopy(doubles, 0, imageData, 0, length*sizeof (double));
-            return imageData;
+            Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+
+            handle.Free();
+
+            return data;
+        }
+
+        /// <summary>
+        ///     Fill region of array by value
+        /// </summary>
+        /// <param name="filter">Output array</param>
+        /// <param name="size"></param>
+        /// <param name="value">Value to replace copied data</param>
+        private static void Fill(Complex[,] filter, Size size, Complex value)
+        {
+            var n0 = filter.GetLength(0);
+            var n1 = filter.GetLength(1);
+            var m0 = Math.Min(n0 - 1, size.Height);
+            var m1 = Math.Min(n1 - 1, size.Width);
+
+            Array.Clear(filter, 0, filter.Length);
+
+            for (var i = 0; i <= m0; i++)
+                for (var j = 0; j <= m1; j++)
+                    filter[i, j] = value;
         }
 
         /// <summary>
         ///     Blur bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Blurred bitmap</returns>
-        public Image<Bgr, Byte> Blur(Image<Bgr, Byte> bitmap)
+        public Image<TColor, TDepth> Blur<TColor, TDepth>(Image<TColor, TDepth> bitmap)
+            where TColor : struct, IColor
+            where TDepth : new()
         {
-            using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
+            using (var image = bitmap.Convert<TColor, double>())
             {
-                image.Data = Apply(image.Data, FilterAction.Multiply);
-                return image.Convert<Bgr, Byte>();
-            }
-        }
-
-        /// <summary>
-        ///     Blur bitmap with the Fastest Fourier Transform
-        /// </summary>
-        /// <returns>Blurred bitmap</returns>
-        public Image<Gray, Byte> Blur(Image<Gray, Byte> bitmap)
-        {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
-            {
-                image.Data = Apply(image.Data, FilterAction.Multiply);
-                return image.Convert<Gray, Byte>();
+                image.Data = Apply(image.Data, FilterAction.Multiply) as double[,,];
+                return image.Convert<TColor, TDepth>();
             }
         }
 
@@ -256,41 +272,23 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             {
-                image.Data = Apply(image.Data, FilterAction.Multiply);
+                image.Data = Apply(image.Data, FilterAction.Multiply) as double[,,];
                 return image.ToBitmap();
             }
-        }
-
-        /// <summary>
-        ///     Fill region of array by value
-        /// </summary>
-        /// <param name="filter">Output array</param>
-        /// <param name="size"></param>
-        /// <param name="value">Value to replace copied data</param>
-        private static void Fill(Complex[,] filter, Size size, Complex value)
-        {
-            int n0 = filter.GetLength(0);
-            int n1 = filter.GetLength(1);
-            int m0 = Math.Min(n0 - 1, size.Height);
-            int m1 = Math.Min(n1 - 1, size.Width);
-
-            Array.Clear(filter, 0, filter.Length);
-
-            for (int i = 0; i <= m0; i++)
-                for (int j = 0; j <= m1; j++)
-                    filter[i, j] = value;
         }
 
         /// <summary>
         ///     Sharp bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Sharped bitmap</returns>
-        public Image<Gray, byte> Sharp(Image<Gray, byte> bitmap)
+        public Image<TColor, TDepth> Sharp<TColor, TDepth>(Image<TColor, TDepth> bitmap)
+            where TColor : struct, IColor
+            where TDepth : new()
         {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
+            using (var image = bitmap.Convert<TColor, double>())
             {
-                image.Data = Apply(image.Data, FilterAction.Divide);
-                return image.Convert<Gray, Byte>();
+                image.Data = Apply(image.Data, FilterAction.Divide) as double[,,];
+                return image.Convert<TColor, TDepth>();
             }
         }
 
@@ -302,21 +300,8 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             {
-                image.Data = Apply(image.Data, FilterAction.Divide);
+                image.Data = Apply(image.Data, FilterAction.Divide) as double[,,];
                 return image.ToBitmap();
-            }
-        }
-
-        /// <summary>
-        ///     Sharp bitmap with the Fastest Fourier Transform
-        /// </summary>
-        /// <returns>Sharped bitmap</returns>
-        public Image<Bgr, byte> Sharp(Image<Bgr, byte> bitmap)
-        {
-            using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
-            {
-                image.Data = Apply(image.Data, FilterAction.Divide);
-                return image.Convert<Bgr, Byte>();
             }
         }
     }

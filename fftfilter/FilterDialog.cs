@@ -15,9 +15,6 @@ namespace fftfilter
             spinEdit2.Value = size.Height;
         }
 
-        public Size FilterSize
-        {
-            get { return new Size((int) spinEdit1.Value, (int) spinEdit2.Value); }
-        }
+        public Size FilterSize => new Size((int) spinEdit1.Value, (int) spinEdit2.Value);
     }
 }

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>fftfilter</RootNamespace>
     <AssemblyName>fftfilter</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -32,6 +32,8 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>15a365b3</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -116,33 +118,43 @@
     <Reference Include="DevExpress.XtraPrinting.v15.1, Version=15.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.XtraGrid.v15.1, Version=15.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.XtraSpreadsheet.v15.1, Version=15.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
-    <Reference Include="Emgu.CV">
+    <Reference Include="Emgu.CV, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.GPU">
+    <Reference Include="Emgu.CV.GPU, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.GPU.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.ML">
+    <Reference Include="Emgu.CV.ML, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.ML.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.OCR">
+    <Reference Include="Emgu.CV.OCR, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.OCR.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.OpenCL">
+    <Reference Include="Emgu.CV.OpenCL, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.OpenCL.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.Stitching">
+    <Reference Include="Emgu.CV.Stitching, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.Stitching.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.UI">
+    <Reference Include="Emgu.CV.UI, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.UI.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV.VideoStab">
+    <Reference Include="Emgu.CV.VideoStab, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.CV.VideoStab.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.Util">
+    <Reference Include="Emgu.Util, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <HintPath>..\packages\VDK.EmguCV.x64.2.4.10.1\lib\net40\Emgu.Util.dll</HintPath>
+      <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
@@ -150,6 +162,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Serialization" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutBox.cs">
@@ -201,6 +214,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="fftfilter_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -240,6 +254,20 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FFTTools.Extensions\FFTTools.Extensions.csproj">
+      <Project>{b0cfb765-d0c3-4b19-b55c-3028270f8df9}</Project>
+      <Name>FFTTools.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FFTTools\FFTTools.csproj">
+      <Project>{04ebcb94-404a-474f-94cd-f58eafff890a}</Project>
+      <Name>FFTTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FFTWSharp\FFTWSharp\FFTWSharp.csproj">
+      <Project>{bea875b8-e28a-49c5-8e7e-6512da65f7e1}</Project>
+      <Name>FFTWSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="x64\cudart64_65.dll" />
     <Content Include="x64\cufft64_65.dll" />
     <Content Include="x64\cvextern.dll" />
@@ -264,88 +292,30 @@
     <Content Include="x64\opencv_superres2410.dll" />
     <Content Include="x64\opencv_video2410.dll" />
     <Content Include="x64\opencv_videostab2410.dll" />
-    <Content Include="x86\cudart32_65.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\cufft32_65.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\cvextern.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\nppc32_65.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\nppi32_65.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\npps32_65.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\OpenCL.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_calib3d2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_contrib2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_core2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_features2d2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_flann2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_gpu2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_highgui2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_imgproc2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_legacy2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_ml2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_nonfree2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_objdetect2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_photo2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_stitching2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_superres2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_video2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\opencv_videostab2410.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FFTTools\FFTTools.csproj">
-      <Project>{04ebcb94-404a-474f-94cd-f58eafff890a}</Project>
-      <Name>FFTTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FFTWSharp\FFTWSharp\FFTWSharp.csproj">
-      <Project>{bea875b8-e28a-49c5-8e7e-6512da65f7e1}</Project>
-      <Name>FFTWSharp</Name>
-    </ProjectReference>
+    <Content Include="x86\cudart32_65.dll" />
+    <Content Include="x86\cufft32_65.dll" />
+    <Content Include="x86\cvextern.dll" />
+    <Content Include="x86\nppc32_65.dll" />
+    <Content Include="x86\nppi32_65.dll" />
+    <Content Include="x86\npps32_65.dll" />
+    <Content Include="x86\OpenCL.dll" />
+    <Content Include="x86\opencv_calib3d2410.dll" />
+    <Content Include="x86\opencv_contrib2410.dll" />
+    <Content Include="x86\opencv_core2410.dll" />
+    <Content Include="x86\opencv_features2d2410.dll" />
+    <Content Include="x86\opencv_flann2410.dll" />
+    <Content Include="x86\opencv_gpu2410.dll" />
+    <Content Include="x86\opencv_highgui2410.dll" />
+    <Content Include="x86\opencv_imgproc2410.dll" />
+    <Content Include="x86\opencv_legacy2410.dll" />
+    <Content Include="x86\opencv_ml2410.dll" />
+    <Content Include="x86\opencv_nonfree2410.dll" />
+    <Content Include="x86\opencv_objdetect2410.dll" />
+    <Content Include="x86\opencv_photo2410.dll" />
+    <Content Include="x86\opencv_stitching2410.dll" />
+    <Content Include="x86\opencv_superres2410.dll" />
+    <Content Include="x86\opencv_video2410.dll" />
+    <Content Include="x86\opencv_videostab2410.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -15,9 +15,6 @@ namespace fftblinder
             spinEdit2.Value = size.Height;
         }
 
-        public Size BlinderSize
-        {
-            get { return new Size((int) spinEdit1.Value, (int) spinEdit2.Value); }
-        }
+        public Size BlinderSize => new Size((int) spinEdit1.Value, (int) spinEdit2.Value);
     }
 }

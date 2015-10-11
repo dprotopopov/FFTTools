@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -59,18 +60,18 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(source))
             {
-                int length = image.Data.Length;
-                int n0 = image.Data.GetLength(0);
-                int n1 = image.Data.GetLength(1);
-                int n2 = image.Data.GetLength(2);
+                var length = image.Data.Length;
+                var n0 = image.Data.GetLength(0);
+                var n1 = image.Data.GetLength(1);
+                var n2 = image.Data.GetLength(2);
                 var doubles = new double[length];
                 Buffer.BlockCopy(image.Data, 0, doubles, 0, length*sizeof (double));
 
-                Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+                var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
 
                 Fourier(n0, n1, n2, complex, FourierDirection.Forward);
 
-                Complex[] array = complex.Select(x => x*Complex.Conjugate(x)).ToArray();
+                var array = complex.Select(x => x*Complex.Conjugate(x)).ToArray();
                 array = array.Select(x => x/array[0]).ToArray();
                 array = array.Select(Complex.Sqrt).ToArray();
 
@@ -79,13 +80,13 @@ namespace FFTTools
                 Fourier(n0, n1, n2, array, FourierDirection.Backward);
                 doubles = array.Select(x => x.Magnitude).ToArray();
 
-                Size filterSize = _filterSize;
+                var filterSize = _filterSize;
                 switch (_filterMode)
                 {
                     case FilterMode.FilterSize:
                         break;
                     case FilterMode.FilterStep:
-                        int filterStep = _filterStep;
+                        var filterStep = _filterStep;
                         filterSize = new Size(MulDiv(n1, filterStep, filterStep + 1),
                             MulDiv(n0, filterStep, filterStep + 1));
                         break;
@@ -95,48 +96,42 @@ namespace FFTTools
                 BlindInner(n0, n1, doubles, filterSize, n2);
 
                 doubles = array.Select(x => x.Magnitude/length).ToArray();
-                double max = doubles.Max();
+                var max = doubles.Max();
                 doubles = doubles.Select(x => Math.Round(255.0*x/max)).ToArray();
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
-                return image.Convert<Bgr, Byte>().ToBitmap();
+
+                var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+                handle.Free();
+
+                return image.Convert<Bgr, byte>().ToBitmap();
             }
         }
 
         /// <summary>
         ///     Deblur bitmap with the Fastest Fourier Transform
         /// </summary>
-        /// <returns>Deblurred bitmap</returns>
-        public Bitmap Deblur(Bitmap bitmap)
+        private Array Deblur(Array data)
         {
-            using (var image = new Image<Bgr, double>(bitmap))
-            {
-                image.Data = Deblur(image.Data);
-                return image.ToBitmap();
-            }
-        }
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-        /// <summary>
-        ///     Deblur bitmap with the Fastest Fourier Transform
-        /// </summary>
-        private double[,,] Deblur(double[,,] imageData)
-        {
-            Complex f = Complex.One;
-            int length = imageData.Length;
-            int n0 = imageData.GetLength(0);
-            int n1 = imageData.GetLength(1);
-            int n2 = imageData.GetLength(2);
+            var f = Complex.One;
+            var length = data.Length;
+            var n0 = data.GetLength(0);
+            var n1 = data.GetLength(1);
+            var n2 = data.GetLength(2);
             var doubles = new double[length];
-            Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
+
+            Marshal.Copy(handle.AddrOfPinnedObject(), doubles, 0, doubles.Length);
 
             double average;
             double delta;
             AverageAndDelta(out average, out delta, doubles, _keepOption);
 
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
 
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
 
-            Complex[] array = complex.Select(x => x*Complex.Conjugate(x)).ToArray();
+            var array = complex.Select(x => x*Complex.Conjugate(x)).ToArray();
             array = array.Select(x => x/array[0]).ToArray();
             array = array.Select(Complex.Sqrt).ToArray();
 
@@ -145,13 +140,13 @@ namespace FFTTools
             Fourier(n0, n1, n2, array, FourierDirection.Backward);
             doubles = array.Select(x => x.Magnitude/length).ToArray();
 
-            Size filterSize = _filterSize;
+            var filterSize = _filterSize;
             switch (_filterMode)
             {
                 case FilterMode.FilterSize:
                     break;
                 case FilterMode.FilterStep:
-                    int filterStep = _filterStep;
+                    var filterStep = _filterStep;
                     filterSize = new Size(MulDiv(n1, filterStep, filterStep + 1),
                         MulDiv(n0, filterStep, filterStep + 1));
                     break;
@@ -167,7 +162,7 @@ namespace FFTTools
             array = array.Select(x => f + x).ToArray();
             array = array.Select(Complex.Reciprocal).ToArray();
 
-            Complex level = complex[0];
+            var level = complex[0];
             complex = complex.Select(x => f + x).ToArray();
             complex = complex.Zip(array, (x, y) => (x*y)).ToArray();
             complex[0] = level;
@@ -181,13 +176,44 @@ namespace FFTTools
 
             // a*average2 + b == average
             // a*delta2 == delta
-            double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-            double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+            var a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+            var b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
             Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
             doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-            Buffer.BlockCopy(doubles, 0, imageData, 0, length*sizeof (double));
-            return imageData;
+
+            Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+            handle.Free();
+
+            return data;
+        }
+
+        /// <summary>
+        ///     Deblur bitmap with the Fastest Fourier Transform
+        /// </summary>
+        /// <returns>Deblurred bitmap</returns>
+        public Bitmap Deblur(Bitmap bitmap)
+        {
+            using (var image = new Image<Bgr, double>(bitmap))
+            {
+                image.Data = Deblur(image.Data) as double[,,];
+                return image.ToBitmap();
+            }
+        }
+
+        /// <summary>
+        ///     Deblur bitmap with the Fastest Fourier Transform
+        /// </summary>
+        /// <returns>Deblurred bitmap</returns>
+        public Image<TColor, TDepth> Deblur<TColor, TDepth>(Image<TColor, TDepth> bitmap)
+            where TColor : struct, IColor
+            where TDepth : new()
+        {
+            using (var image = bitmap.Convert<TColor, double>())
+            {
+                image.Data = Deblur(image.Data) as double[,,];
+                return image.Convert<TColor, TDepth>();
+            }
         }
     }
 }

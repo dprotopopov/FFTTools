@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using DevExpress.XtraEditors;
 
@@ -10,9 +9,9 @@ namespace fftfilter
         public AboutBox()
         {
             InitializeComponent();
-            Text = String.Format("О программе {0}", AssemblyTitle);
+            Text = string.Format("О программе {0}", AssemblyTitle);
             labelProductName.Text = AssemblyProduct;
-            labelVersion.Text = String.Format("Версия {0}", AssemblyVersion);
+            labelVersion.Text = string.Format("Версия {0}", AssemblyVersion);
             labelCopyright.Text = AssemblyCopyright;
             labelCompanyName.Text = AssemblyCompany;
             textBoxDescription.Text = AssemblyDescription;
@@ -24,7 +23,7 @@ namespace fftfilter
         {
             get
             {
-                object[] attributes =
+                var attributes =
                     Assembly.GetExecutingAssembly().GetCustomAttributes(typeof (AssemblyTitleAttribute), false);
                 if (attributes.Length > 0)
                 {
@@ -38,22 +37,15 @@ namespace fftfilter
             }
         }
 
-        public string AssemblyVersion
-        {
-            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
-        }
+        public string AssemblyVersion => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public string AssemblyDescription
         {
             get
             {
-                object[] attributes =
+                var attributes =
                     Assembly.GetExecutingAssembly().GetCustomAttributes(typeof (AssemblyDescriptionAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyDescriptionAttribute) attributes[0]).Description;
+                return attributes.Length == 0 ? "" : ((AssemblyDescriptionAttribute) attributes[0]).Description;
             }
         }
 
@@ -61,13 +53,9 @@ namespace fftfilter
         {
             get
             {
-                object[] attributes =
+                var attributes =
                     Assembly.GetExecutingAssembly().GetCustomAttributes(typeof (AssemblyProductAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyProductAttribute) attributes[0]).Product;
+                return attributes.Length == 0 ? "" : ((AssemblyProductAttribute) attributes[0]).Product;
             }
         }
 
@@ -75,13 +63,9 @@ namespace fftfilter
         {
             get
             {
-                object[] attributes =
+                var attributes =
                     Assembly.GetExecutingAssembly().GetCustomAttributes(typeof (AssemblyCopyrightAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyCopyrightAttribute) attributes[0]).Copyright;
+                return attributes.Length == 0 ? "" : ((AssemblyCopyrightAttribute) attributes[0]).Copyright;
             }
         }
 
@@ -89,13 +73,9 @@ namespace fftfilter
         {
             get
             {
-                object[] attributes =
+                var attributes =
                     Assembly.GetExecutingAssembly().GetCustomAttributes(typeof (AssemblyCompanyAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyCompanyAttribute) attributes[0]).Company;
+                return attributes.Length == 0 ? "" : ((AssemblyCompanyAttribute) attributes[0]).Company;
             }
         }
 

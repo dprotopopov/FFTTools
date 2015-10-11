@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using DevExpress.XtraBars;
@@ -71,7 +72,7 @@ namespace fftfilter
                 if (bitmap == null) throw new Exception("Нет изображения");
                 if (_filterDialog.ShowDialog() != DialogResult.OK) return;
 
-                Size filterSize = _filterDialog.FilterSize;
+                var filterSize = _filterDialog.FilterSize;
 
                 using (var builder = new FilterBuilder(filterSize))
                     pictureEdit1.Image = builder.Blur(bitmap);
@@ -96,7 +97,7 @@ namespace fftfilter
                 if (bitmap == null) throw new Exception("Нет изображения");
                 if (_filterDialog.ShowDialog() != DialogResult.OK) return;
 
-                Size filterSize = _filterDialog.FilterSize;
+                var filterSize = _filterDialog.FilterSize;
 
                 using (var builder = new FilterBuilder(filterSize))
                     pictureEdit1.Image = builder.Sharp(bitmap);
@@ -113,16 +114,19 @@ namespace fftfilter
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) throw new Exception("Нет изображения");
-                using (var image = new Image<Bgr, double>(bitmap))
+                using (var image = new Image<Bgr, byte>(bitmap))
                 {
-                    double[,,] data = image.Data;
-                    int length = data.Length;
+                    var length = image.Data.Length;
                     var bytes = new byte[length];
-                    Buffer.BlockCopy(data, 0, bytes, 0, length);
-                    double average = bytes.Average(x => (double) x);
-                    double delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
-                    double minValue = bytes.Min(x => (double) x);
-                    double maxValue = bytes.Max(x => (double) x);
+
+                    var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                    Marshal.Copy(handle.AddrOfPinnedObject(), bytes, 0, bytes.Length);
+                    handle.Free();
+
+                    var average = bytes.Average(x => (double) x);
+                    var delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
+                    var minValue = bytes.Min(x => (double) x);
+                    var maxValue = bytes.Max(x => (double) x);
                     var sb = new StringBuilder();
                     sb.AppendLine(string.Format("Length {0}", length));
                     sb.AppendLine(string.Format("Average {0}", average));
@@ -146,7 +150,7 @@ namespace fftfilter
                 if (bitmap == null) throw new Exception("Нет изображения");
                 if (_filterDialog.ShowDialog() != DialogResult.OK) return;
 
-                Size filterSize = _filterDialog.FilterSize;
+                var filterSize = _filterDialog.FilterSize;
 
                 using (var builder = new FilterBuilder(filterSize))
                     pictureEdit1.Image = builder.ToBitmap(bitmap);

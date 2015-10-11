@@ -5,6 +5,6 @@ namespace FFTTools
         AverageAndDelta,
         Sum,
         Square,
-        AverageSquare,
+        AverageSquare
     };
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using DevExpress.XtraBars;
@@ -38,16 +39,19 @@ namespace fftzoomer
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                using (var image = new Image<Bgr, double>(bitmap))
+                using (var image = new Image<Bgr, byte>(bitmap))
                 {
-                    double[,,] data = image.Data;
-                    int length = data.Length;
+                    var length = image.Data.Length;
                     var bytes = new byte[length];
-                    Buffer.BlockCopy(data, 0, bytes, 0, length);
-                    double average = bytes.Average(x => (double) x);
-                    double delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
-                    double minValue = bytes.Min(x => (double) x);
-                    double maxValue = bytes.Max(x => (double) x);
+
+                    var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                    Marshal.Copy(handle.AddrOfPinnedObject(), bytes, 0, bytes.Length);
+                    handle.Free();
+
+                    var average = bytes.Average(x => (double) x);
+                    var delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
+                    var minValue = bytes.Min(x => (double) x);
+                    var maxValue = bytes.Max(x => (double) x);
                     var sb = new StringBuilder();
                     sb.AppendLine(string.Format("Length {0}", length));
                     sb.AppendLine(string.Format("Average {0}", average));
@@ -97,14 +101,17 @@ namespace fftzoomer
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                using (var stretchDialog = new StretchDialog(bitmap.Size))
+                var size = bitmap.Size;
+                using (var stretchDialog = new StretchDialog(new Size(size.Width, size.Height)))
                 {
                     if (stretchDialog.ShowDialog() != DialogResult.OK) return;
 
-                    Size imageSize = stretchDialog.ImageSize;
+                    var imageSize = stretchDialog.ImageSize;
 
                     using (var builder = new StretchBuilder(imageSize))
+                    {
                         pictureEdit1.Image = builder.Stretch(bitmap);
+                    }
                 }
             }
             catch (Exception exception)

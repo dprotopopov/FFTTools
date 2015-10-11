@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using FFTWSharp;
@@ -16,55 +15,13 @@ namespace FFTTools
         ///     Hartley transform
         /// </summary>
         /// <param name="array">Array</param>
-        public static void Hartley(double[] array)
+        public static void Hartley(Array array)
         {
-            int n0 = array.GetLength(0);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             FftwLock.WaitOne();
-            IntPtr plan = r2r_1d(n0,
+            var plan = r2r(array.Rank, Enumerable.Range(0, array.Rank).Select(array.GetLength).ToArray(),
                 handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
-                fftw_kind.DHT,
-                fftw_flags.Estimate);
-            execute(plan);
-            destroy_plan(plan);
-            FftwLock.ReleaseMutex();
-            handle.Free();
-        }
-
-        /// <summary>
-        ///     Hartley transform
-        /// </summary>
-        /// <param name="array">Array</param>
-        public static void Hartley(double[,] array)
-        {
-            int n0 = array.GetLength(0);
-            int n1 = array.GetLength(1);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            FftwLock.WaitOne();
-            IntPtr plan = r2r_2d(n0, n1,
-                handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
-                fftw_kind.DHT, fftw_kind.DHT,
-                fftw_flags.Estimate);
-            execute(plan);
-            destroy_plan(plan);
-            FftwLock.ReleaseMutex();
-            handle.Free();
-        }
-
-        /// <summary>
-        ///     Hartley transform
-        /// </summary>
-        /// <param name="array">Array</param>
-        public static void Hartley(double[,,] array)
-        {
-            int n0 = array.GetLength(0);
-            int n1 = array.GetLength(1);
-            int n2 = array.GetLength(2);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            FftwLock.WaitOne();
-            IntPtr plan = r2r_3d(n0, n1, n2,
-                handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
-                fftw_kind.DHT, fftw_kind.DHT, fftw_kind.DHT,
+                Enumerable.Repeat(fftw_kind.DHT, array.Rank).ToArray(),
                 fftw_flags.Estimate);
             execute(plan);
             destroy_plan(plan);
@@ -79,11 +36,11 @@ namespace FFTTools
         /// <param name="n1">Array size</param>
         /// <param name="n2">Array size</param>
         /// <param name="array">Array</param>
-        public static void Hartley(int n0, int n1, int n2, double[] array)
+        public static void Hartley(int n0, int n1, int n2, Array array)
         {
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             FftwLock.WaitOne();
-            IntPtr plan = r2r_3d(n0, n1, n2,
+            var plan = r2r_3d(n0, n1, n2,
                 handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
                 fftw_kind.DHT, fftw_kind.DHT, fftw_kind.DHT,
                 fftw_flags.Estimate);
@@ -98,55 +55,11 @@ namespace FFTTools
         /// </summary>
         /// <param name="array">Array</param>
         /// <param name="direction">Fourier direction</param>
-        public static void Fourier(Complex[] array, FourierDirection direction)
+        public static void Fourier(Array array, FourierDirection direction)
         {
-            int n0 = array.GetLength(0);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             FftwLock.WaitOne();
-            IntPtr plan = dft_1d(n0,
-                handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
-                (fftw_direction) direction,
-                fftw_flags.Estimate);
-            execute(plan);
-            destroy_plan(plan);
-            FftwLock.ReleaseMutex();
-            handle.Free();
-        }
-
-        /// <summary>
-        ///     Fourier transform
-        /// </summary>
-        /// <param name="array">Array</param>
-        /// <param name="direction">Fourier direction</param>
-        public static void Fourier(Complex[,] array, FourierDirection direction)
-        {
-            int n0 = array.GetLength(0);
-            int n1 = array.GetLength(1);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            FftwLock.WaitOne();
-            IntPtr plan = dft_2d(n0, n1,
-                handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
-                (fftw_direction) direction,
-                fftw_flags.Estimate);
-            execute(plan);
-            destroy_plan(plan);
-            FftwLock.ReleaseMutex();
-            handle.Free();
-        }
-
-        /// <summary>
-        ///     Fourier transform
-        /// </summary>
-        /// <param name="array">Array</param>
-        /// <param name="direction">Fourier direction</param>
-        public static void Fourier(Complex[,,] array, FourierDirection direction)
-        {
-            int n0 = array.GetLength(0);
-            int n1 = array.GetLength(1);
-            int n2 = array.GetLength(2);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            FftwLock.WaitOne();
-            IntPtr plan = dft_3d(n0, n1, n2,
+            var plan = dft(array.Rank, Enumerable.Range(0, array.Rank).Select(array.GetLength).ToArray(),
                 handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
                 (fftw_direction) direction,
                 fftw_flags.Estimate);
@@ -163,11 +76,11 @@ namespace FFTTools
         /// <param name="n1">Array size</param>
         /// <param name="array">Array</param>
         /// <param name="direction">Fourier direction</param>
-        public static void Fourier(int n0, int n1, Complex[] array, FourierDirection direction)
+        public static void Fourier(int n0, int n1, Array array, FourierDirection direction)
         {
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             FftwLock.WaitOne();
-            IntPtr plan = dft_2d(n0, n1,
+            var plan = dft_2d(n0, n1,
                 handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
                 (fftw_direction) direction,
                 fftw_flags.Estimate);
@@ -185,11 +98,11 @@ namespace FFTTools
         /// <param name="n2">Array size</param>
         /// <param name="array">Array</param>
         /// <param name="direction">Fourier direction</param>
-        public static void Fourier(int n0, int n1, int n2, Complex[] array, FourierDirection direction)
+        public static void Fourier(int n0, int n1, int n2, Array array, FourierDirection direction)
         {
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             FftwLock.WaitOne();
-            IntPtr plan = dft_3d(n0, n1, n2,
+            var plan = dft_3d(n0, n1, n2,
                 handle.AddrOfPinnedObject(), handle.AddrOfPinnedObject(),
                 (fftw_direction) direction,
                 fftw_flags.Estimate);
@@ -244,82 +157,39 @@ namespace FFTTools
         /// <param name="inner">Array of values</param>
         /// <param name="size">Region size</param>
         /// <param name="n2">Array size</param>
-        public static void Split(int n0, int n1, Complex[] data, Complex[] outer, Complex[] middle, Complex[] inner,
+        public static void Split(int n0, int n1, Array data, Array outer, Array middle, Array inner,
             Size size, int n2)
         {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = s0; i < e0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, inner, (i*n1 + s1)*n2, (e1 - s1)*n2);
                 Array.Copy(data, i*n1*n2, middle, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, middle, (i*n1 + e1)*n2, (n1 - e1)*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
             }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
             }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
             }
         }
 
-        /// <summary>
-        ///     Split array
-        /// </summary>
-        /// <param name="n0">Array size</param>
-        /// <param name="n1">Array size</param>
-        /// <param name="data">Array of values</param>
-        /// <param name="outer">Array of values</param>
-        /// <param name="middle">Array of values</param>
-        /// <param name="inner">Array of values</param>
-        /// <param name="size">Region size</param>
-        /// <param name="n2">Array size</param>
-        public static void Split(int n0, int n1, double[] data, double[] outer, double[] middle, double[] inner,
-            Size size, int n2)
-        {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, inner, (i*n1 + s1)*n2, (e1 - s1)*n2);
-                Array.Copy(data, i*n1*n2, middle, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, middle, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
-            }
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-        }
 
         /// <summary>
         ///     Split array
@@ -329,80 +199,35 @@ namespace FFTTools
         /// <param name="middle">Array of values</param>
         /// <param name="inner">Array of values</param>
         /// <param name="size">Region size</param>
-        public static void Split(double[,,] data,
-            double[,,] outer, double[,,] middle, double[,,] inner, Size size)
+        public static void Split(Array data, Array outer, Array middle, Array inner, Size size)
         {
-            int n0 = data.GetLength(0);
-            int n1 = data.GetLength(1);
-            int n2 = data.GetLength(2);
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
+            var n0 = data.GetLength(0);
+            var n1 = data.GetLength(1);
+            var n2 = data.GetLength(2);
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = s0; i < e0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, inner, (i*n1 + s1)*n2, (e1 - s1)*n2);
                 Array.Copy(data, i*n1*n2, middle, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, middle, (i*n1 + e1)*n2, (n1 - e1)*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
             }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
             }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-        }
-
-        /// <summary>
-        ///     Split array
-        /// </summary>
-        /// <param name="data">Array of values</param>
-        /// <param name="outer">Array of values</param>
-        /// <param name="middle">Array of values</param>
-        /// <param name="inner">Array of values</param>
-        /// <param name="size">Region size</param>
-        public static void Split(Complex[,,] data,
-            Complex[,,] outer, Complex[,,] middle, Complex[,,] inner, Size size)
-        {
-            int n0 = data.GetLength(0);
-            int n1 = data.GetLength(1);
-            int n2 = data.GetLength(2);
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, inner, (i*n1 + s1)*n2, (e1 - s1)*n2);
-                Array.Copy(data, i*n1*n2, middle, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, middle, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Copy(data, (i*n1 + s1)*n2, middle, (i*n1 + s1)*n2, (e1 - s1)*n2);
-            }
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
-                Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Copy(data, i*n1*n2, outer, i*n1*n2, s1*n2);
                 Array.Copy(data, (i*n1 + e1)*n2, outer, (i*n1 + e1)*n2, (n1 - e1)*n2);
@@ -414,24 +239,24 @@ namespace FFTTools
         /// </summary>
         /// <param name="data">Array of values</param>
         /// <param name="size">Internal blind region size</param>
-        public static void BlindInner(Complex[,,] data, Size size)
+        public static void BlindInner(Array data, Size size)
         {
-            int n0 = data.GetLength(0);
-            int n1 = data.GetLength(1);
-            int n2 = data.GetLength(2);
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
+            var n0 = data.GetLength(0);
+            var n1 = data.GetLength(1);
+            var n2 = data.GetLength(2);
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = s0; i < e0; i++)
             {
                 Array.Clear(data, i*n1*n2, n1*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
             }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
             }
@@ -445,49 +270,21 @@ namespace FFTTools
         /// <param name="data">Array of values</param>
         /// <param name="size">External blind region size</param>
         /// <param name="n2">Array size</param>
-        public static void BlindInner(int n0, int n1, Complex[] data, Size size, int n2)
+        public static void BlindInner(int n0, int n1, Array data, Size size, int n2)
         {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = s0; i < e0; i++)
             {
                 Array.Clear(data, i*n1*n2, n1*n2);
             }
-            for (int i = 0; i < s0; i++)
+            for (var i = 0; i < s0; i++)
             {
                 Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
             }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
-            }
-        }
-
-        /// <summary>
-        ///     Clear internal region of array
-        /// </summary>
-        /// <param name="n0">Array size</param>
-        /// <param name="n1">Array size</param>
-        /// <param name="data">Array of values</param>
-        /// <param name="size">External blind region size</param>
-        /// <param name="n2">Array size</param>
-        public static void BlindInner(int n0, int n1, double[] data, Size size, int n2)
-        {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = s0; i < e0; i++)
-            {
-                Array.Clear(data, i*n1*n2, n1*n2);
-            }
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Clear(data, i*n1*n2 + s1*n2, (e1 - s1)*n2);
             }
@@ -498,21 +295,21 @@ namespace FFTTools
         /// </summary>
         /// <param name="data">Array of values</param>
         /// <param name="size">External blind region size</param>
-        public static void BlindOuter(Complex[,,] data, Size size)
+        public static void BlindOuter(Array data, Size size)
         {
-            int n0 = data.GetLength(0);
-            int n1 = data.GetLength(1);
-            int n2 = data.GetLength(2);
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = 0; i < s0; i++)
+            var n0 = data.GetLength(0);
+            var n1 = data.GetLength(1);
+            var n2 = data.GetLength(2);
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = 0; i < s0; i++)
             {
                 Array.Clear(data, i*n1*n2, s1*n2);
                 Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);
             }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Clear(data, i*n1*n2, s1*n2);
                 Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);
@@ -527,44 +324,18 @@ namespace FFTTools
         /// <param name="data">Array of values</param>
         /// <param name="size">External blind region size</param>
         /// <param name="n2">Array size</param>
-        public static void BlindOuter(int n0, int n1, Complex[] data, Size size, int n2)
+        public static void BlindOuter(int n0, int n1, Array data, Size size, int n2)
         {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = 0; i < s0; i++)
+            var s0 = Math.Max(0, (n0 - size.Height)/2);
+            var s1 = Math.Max(0, (n1 - size.Width)/2);
+            var e0 = Math.Min((n0 + size.Height)/2, n0);
+            var e1 = Math.Min((n1 + size.Width)/2, n1);
+            for (var i = 0; i < s0; i++)
             {
                 Array.Clear(data, i*n1*n2, s1*n2);
                 Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);
             }
-            for (int i = e0; i < n0; i++)
-            {
-                Array.Clear(data, i*n1*n2, s1*n2);
-                Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);
-            }
-        }
-
-        /// <summary>
-        ///     Clear external region of array
-        /// </summary>
-        /// <param name="n0">Array size</param>
-        /// <param name="n1">Array size</param>
-        /// <param name="data">Array of values</param>
-        /// <param name="size">External blind region size</param>
-        /// <param name="n2">Array size</param>
-        public static void BlindOuter(int n0, int n1, double[] data, Size size, int n2)
-        {
-            int s0 = Math.Max(0, (n0 - size.Height)/2);
-            int s1 = Math.Max(0, (n1 - size.Width)/2);
-            int e0 = Math.Min((n0 + size.Height)/2, n0);
-            int e1 = Math.Min((n1 + size.Width)/2, n1);
-            for (int i = 0; i < s0; i++)
-            {
-                Array.Clear(data, i*n1*n2, s1*n2);
-                Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);
-            }
-            for (int i = e0; i < n0; i++)
+            for (var i = e0; i < n0; i++)
             {
                 Array.Clear(data, i*n1*n2, s1*n2);
                 Array.Clear(data, i*n1*n2 + e1*n2, (n1 - e1)*n2);

@@ -16,15 +16,9 @@ namespace fftzoomer
             spinEdit2.Value = size.Height;
         }
 
-        public bool KeepProportions
-        {
-            get { return checkBox1.Checked; }
-        }
+        public bool KeepProportions => checkBox1.Checked;
 
-        public Size ImageSize
-        {
-            get { return new Size((int) spinEdit1.Value, (int) spinEdit2.Value); }
-        }
+        public Size ImageSize => new Size((int) spinEdit1.Value, (int) spinEdit2.Value);
 
         private void spinEdit1_EditValueChanged(object sender, EventArgs e)
         {

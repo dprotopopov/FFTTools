@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -61,26 +62,26 @@ namespace FFTTools
         /// <param name="output">Output array</param>
         private static void Copy(Complex[,,] input, Complex[,,] output)
         {
-            int n0 = input.GetLength(0);
-            int n1 = input.GetLength(1);
-            int n2 = input.GetLength(2);
-            int m0 = output.GetLength(0);
-            int m1 = output.GetLength(1);
-            int m2 = output.GetLength(2);
-            int ex0 = Math.Min(n0, m0)/2;
-            int ex1 = Math.Min(n1, m1)/2;
-            int ex2 = Math.Min(n2, m2);
+            var n0 = input.GetLength(0);
+            var n1 = input.GetLength(1);
+            var n2 = input.GetLength(2);
+            var m0 = output.GetLength(0);
+            var m1 = output.GetLength(1);
+            var m2 = output.GetLength(2);
+            var ex0 = Math.Min(n0, m0)/2;
+            var ex1 = Math.Min(n1, m1)/2;
+            var ex2 = Math.Min(n2, m2);
             Debug.Assert(n2 == m2);
-            for (int k = 0; k < ex2; k++)
+            for (var k = 0; k < ex2; k++)
             {
-                for (int i = 0; i <= ex0; i++)
+                for (var i = 0; i <= ex0; i++)
                 {
-                    for (int j = 0; j <= ex1; j++)
+                    for (var j = 0; j <= ex1; j++)
                     {
-                        int ni = n0 - i - 1;
-                        int nj = n1 - j - 1;
-                        int mi = m0 - i - 1;
-                        int mj = m1 - j - 1;
+                        var ni = n0 - i - 1;
+                        var nj = n1 - j - 1;
+                        var mi = m0 - i - 1;
+                        var mj = m1 - j - 1;
                         output[i, j, k] = input[i, j, k];
                         output[mi, j, k] = input[ni, j, k];
                         output[i, mj, k] = input[i, nj, k];
@@ -102,21 +103,18 @@ namespace FFTTools
         /// <param name="nm2">Source/Destination array size</param>
         private static void Copy(int n0, int n1, int m0, int m1, Complex[] input, Complex[] output, int nm2)
         {
-            int ex0 = Math.Min(n0, m0)/2;
-            int ex1 = Math.Min(n1, m1)/2;
-            for (int i = 0; i <= ex0; i++)
+            var ex0 = Math.Min(n0, m0)/2;
+            var ex1 = Math.Min(n1, m1)/2;
+            var nj = n1 - ex1;
+            var mj = m1 - ex1;
+            for (var i = 0; i <= ex0; i++)
             {
-                for (int j = 0; j <= ex1; j++)
-                {
-                    int ni = n0 - i - 1;
-                    int nj = n1 - j - 1;
-                    int mi = m0 - i - 1;
-                    int mj = m1 - j - 1;
-                    Array.Copy(input, (i*n1 + j)*nm2, output, (i*m1 + j)*nm2, nm2);
-                    Array.Copy(input, (ni*n1 + j)*nm2, output, (mi*m1 + j)*nm2, nm2);
-                    Array.Copy(input, (i*n1 + nj)*nm2, output, (i*m1 + mj)*nm2, nm2);
-                    Array.Copy(input, (ni*n1 + nj)*nm2, output, (mi*m1 + mj)*nm2, nm2);
-                }
+                var ni = n0 - i - 1;
+                var mi = m0 - i - 1;
+                Array.Copy(input, i*n1*nm2, output, i*m1*nm2, ex1*nm2);
+                Array.Copy(input, ni*n1*nm2, output, mi*m1*nm2, ex1*nm2);
+                Array.Copy(input, (i*n1 + nj)*nm2, output, (i*m1 + mj)*nm2, ex1*nm2);
+                Array.Copy(input, (ni*n1 + nj)*nm2, output, (mi*m1 + mj)*nm2, ex1*nm2);
             }
         }
 
@@ -124,27 +122,30 @@ namespace FFTTools
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
-        public double[,,] Stretch(double[,,] imageData)
+        public Array Stretch(Array imageData)
         {
-            int length = imageData.Length;
-            int n0 = imageData.GetLength(0);
-            int n1 = imageData.GetLength(1);
-            int n2 = imageData.GetLength(2);
+            var length = imageData.Length;
+            var n0 = imageData.GetLength(0);
+            var n1 = imageData.GetLength(1);
+            var n2 = imageData.GetLength(2);
 
             var doubles = new double[length];
-            Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
+
+            var handle = GCHandle.Alloc(imageData, GCHandleType.Pinned);
+            Marshal.Copy(handle.AddrOfPinnedObject(), doubles, 0, doubles.Length);
+            handle.Free();
 
             double average;
             double delta;
             AverageAndDelta(out average, out delta, doubles, _keepOption);
 
-            Size newSize = _filterSize;
+            var newSize = _filterSize;
             switch (_filterMode)
             {
                 case FilterMode.FilterSize:
                     break;
                 case FilterMode.FilterStep:
-                    int filterStep = _filterStep;
+                    var filterStep = _filterStep;
                     newSize = new Size(MulDiv(n1, filterStep + filterStep + 1, filterStep + filterStep),
                         MulDiv(n0, filterStep + filterStep + 1, filterStep + filterStep));
                     break;
@@ -153,12 +154,12 @@ namespace FFTTools
             }
 
             var imageData2 = new double[newSize.Height, newSize.Width, n2];
-            int length2 = imageData2.Length;
-            int m0 = imageData2.GetLength(0);
-            int m1 = imageData2.GetLength(1);
-            int m2 = imageData2.GetLength(2);
+            var length2 = imageData2.Length;
+            var m0 = imageData2.GetLength(0);
+            var m1 = imageData2.GetLength(1);
+            var m2 = imageData2.GetLength(2);
 
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             var complex2 = new Complex[length2];
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
             Copy(n0, n1, m0, m1, complex, complex2, n2);
@@ -171,12 +172,16 @@ namespace FFTTools
 
             // a*average2 + b == average
             // a*delta2 == delta
-            double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-            double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+            var a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+            var b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
             Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
             doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-            Buffer.BlockCopy(doubles, 0, imageData2, 0, length2*sizeof (double));
+
+            handle = GCHandle.Alloc(imageData2, GCHandleType.Pinned);
+            Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+            handle.Free();
+
             return imageData2;
         }
 
@@ -184,22 +189,22 @@ namespace FFTTools
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
-        public Image<Bgr, Byte> Stretch(Image<Bgr, Byte> bitmap)
+        public Image<Bgr, byte> Stretch(Image<Bgr, byte> bitmap)
         {
-            using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
-            using (var image2 = new Image<Bgr, double>(Stretch(image.Data)))
-                return image2.Convert<Bgr, Byte>();
+            using (var image = bitmap.Convert<Bgr, double>())
+            using (var image2 = new Image<Bgr, double>(Stretch(image.Data) as double[,,]))
+                return image2.Convert<Bgr, byte>();
         }
 
         /// <summary>
         ///     Resize bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Resized bitmap</returns>
-        public Image<Gray, Byte> Stretch(Image<Gray, Byte> bitmap)
+        public Image<Gray, byte> Stretch(Image<Gray, byte> bitmap)
         {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
-            using (var image2 = new Image<Gray, double>(Stretch(image.Data)))
-                return image2.Convert<Gray, Byte>();
+            using (var image = bitmap.Convert<Gray, double>())
+            using (var image2 = new Image<Gray, double>(Stretch(image.Data) as double[,,]))
+                return image2.Convert<Gray, byte>();
         }
 
         /// <summary>
@@ -209,8 +214,8 @@ namespace FFTTools
         public Bitmap Stretch(Bitmap bitmap)
         {
             using (var image = new Image<Bgr, double>(bitmap))
-            using (var image2 = new Image<Bgr, double>(Stretch(image.Data)))
-                return image2.Convert<Bgr, Byte>().ToBitmap();
+            using (var image2 = new Image<Bgr, double>(Stretch(image.Data) as double[,,]))
+                return image2.Convert<Bgr, byte>().ToBitmap();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using DevExpress.XtraBars;
@@ -67,12 +68,12 @@ namespace fftblinder
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                Size size = bitmap.Size;
+                var size = bitmap.Size;
                 using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
                 {
                     if (blinderDialog.ShowDialog() != DialogResult.OK) return;
 
-                    Size blinderSize = blinderDialog.BlinderSize;
+                    var blinderSize = blinderDialog.BlinderSize;
 
                     using (var builder = new BlurBuilder(blinderSize))
                         pictureEdit1.Image = builder.Blur(bitmap);
@@ -96,12 +97,12 @@ namespace fftblinder
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                Size size = bitmap.Size;
+                var size = bitmap.Size;
                 using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
                 {
                     if (blinderDialog.ShowDialog() != DialogResult.OK) return;
 
-                    Size blinderSize = blinderDialog.BlinderSize;
+                    var blinderSize = blinderDialog.BlinderSize;
 
                     using (var builder = new SharpBuilder(blinderSize))
                         pictureEdit1.Image = builder.Sharp(bitmap);
@@ -119,16 +120,17 @@ namespace fftblinder
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                using (var image = new Image<Bgr, double>(bitmap))
+                using (var image = new Image<Bgr, byte>(bitmap))
                 {
-                    double[,,] data = image.Data;
-                    int length = data.Length;
+                    var length = image.Data.Length;
                     var bytes = new byte[length];
-                    Buffer.BlockCopy(data, 0, bytes, 0, length);
-                    double average = bytes.Average(x => (double) x);
-                    double delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
-                    double minValue = bytes.Min(x => (double) x);
-                    double maxValue = bytes.Max(x => (double) x);
+                    var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                    Marshal.Copy(handle.AddrOfPinnedObject(), bytes, 0, bytes.Length);
+                    handle.Free();
+                    var average = bytes.Average(x => (double) x);
+                    var delta = Math.Sqrt(bytes.Average(x => (double) x*x) - average*average);
+                    var minValue = bytes.Min(x => (double) x);
+                    var maxValue = bytes.Max(x => (double) x);
                     var sb = new StringBuilder();
                     sb.AppendLine(string.Format("Length {0}", length));
                     sb.AppendLine(string.Format("Average {0}", average));
@@ -149,12 +151,12 @@ namespace fftblinder
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                Size size = bitmap.Size;
+                var size = bitmap.Size;
                 using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
                 {
                     if (blinderDialog.ShowDialog() != DialogResult.OK) return;
 
-                    Size blinderSize = blinderDialog.BlinderSize;
+                    var blinderSize = blinderDialog.BlinderSize;
 
                     using (var builder = new BlurBuilder(blinderSize))
                         pictureEdit1.Image = builder.ToBitmap(bitmap);
@@ -172,12 +174,12 @@ namespace fftblinder
             {
                 var bitmap = pictureEdit1.Image as Bitmap;
                 if (bitmap == null) return;
-                Size size = bitmap.Size;
+                var size = bitmap.Size;
                 using (var blinderDialog = new BlinderDialog(new Size(size.Width*3/4, size.Height*3/4)))
                 {
                     if (blinderDialog.ShowDialog() != DialogResult.OK) return;
 
-                    Size blinderSize = blinderDialog.BlinderSize;
+                    var blinderSize = blinderDialog.BlinderSize;
 
                     using (var builder = new SharpBuilder(blinderSize))
                         pictureEdit1.Image = builder.ToBitmap(bitmap);

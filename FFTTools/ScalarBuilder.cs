@@ -32,9 +32,9 @@ namespace FFTTools
         /// <param name="ff">Output values</param>
         public static void Scalar(double[] f, double[] ff)
         {
-            int length = ff.Length;
-            double[] doubles = f.Concat(Enumerable.Repeat(0.0, length - f.Length)).ToArray();
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var length = ff.Length;
+            var doubles = f.Concat(Enumerable.Repeat(0.0, length - f.Length)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(complex, FourierDirection.Forward);
             complex = complex.Select(x => x*Complex.Conjugate(x)/length).ToArray();
             Fourier(complex, FourierDirection.Backward);
@@ -49,8 +49,8 @@ namespace FFTTools
         /// <param name="ff">Output values</param>
         public static void Scalar(Complex[] f, Complex[] ff)
         {
-            int length = ff.Length;
-            Complex[] complex = f.Concat(Enumerable.Repeat(Complex.Zero, length - f.Length)).ToArray();
+            var length = ff.Length;
+            var complex = f.Concat(Enumerable.Repeat(Complex.Zero, length - f.Length)).ToArray();
             Fourier(complex, FourierDirection.Forward);
             complex = complex.Select(x => x*Complex.Conjugate(x)/length).ToArray();
             Fourier(complex, FourierDirection.Backward);
@@ -65,15 +65,15 @@ namespace FFTTools
         /// <param name="fg">Output values</param>
         public static void Scalar(double[] f, double[] g, double[] fg)
         {
-            int length = fg.Length;
-            double[] doubles = f.Concat(Enumerable.Repeat(0.0, length - f.Length)).ToArray();
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var length = fg.Length;
+            var doubles = f.Concat(Enumerable.Repeat(0.0, length - f.Length)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(complex, FourierDirection.Forward);
             doubles = g.Concat(Enumerable.Repeat(0.0, length - g.Length)).ToArray();
-            Complex[] complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(complex, FourierDirection.Backward);
             doubles = complex.Select(x => x.Real).ToArray();
@@ -88,13 +88,13 @@ namespace FFTTools
         /// <param name="fg">Output values</param>
         public static void Scalar(Complex[] f, Complex[] g, Complex[] fg)
         {
-            int length = fg.Length;
-            Complex[] complex = f.Concat(Enumerable.Repeat(Complex.Zero, length - f.Length)).ToArray();
+            var length = fg.Length;
+            var complex = f.Concat(Enumerable.Repeat(Complex.Zero, length - f.Length)).ToArray();
             Fourier(complex, FourierDirection.Forward);
-            Complex[] complex1 = g.Concat(Enumerable.Repeat(Complex.Zero, length - g.Length)).ToArray();
+            var complex1 = g.Concat(Enumerable.Repeat(Complex.Zero, length - g.Length)).ToArray();
             Fourier(complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(complex, FourierDirection.Backward);
             Array.Copy(complex, 0, fg, 0, length);
@@ -114,15 +114,15 @@ namespace FFTTools
             Debug.Assert(fg.Length == n0*n1*n2);
             Debug.Assert(f.Length == fg.Length);
             Debug.Assert(g.Length == fg.Length);
-            int length = fg.Length;
-            double[] doubles = f.ToArray();
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var length = fg.Length;
+            var doubles = f.ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
             doubles = g.ToArray();
-            Complex[] complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(n0, n1, n2, complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(n0, n1, n2, complex, FourierDirection.Backward);
             doubles = complex.Select(x => x.Real).ToArray();
@@ -142,15 +142,15 @@ namespace FFTTools
             Debug.Assert(fg.Length == n0*n1);
             Debug.Assert(f.Length == fg.Length);
             Debug.Assert(g.Length == fg.Length);
-            int length = fg.Length;
-            double[] doubles = f.ToArray();
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var length = fg.Length;
+            var doubles = f.ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(n0, n1, complex, FourierDirection.Forward);
             doubles = g.ToArray();
-            Complex[] complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex1 = doubles.Select(x => new Complex(x, 0)).ToArray();
             Fourier(n0, n1, complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(n0, n1, complex, FourierDirection.Backward);
             doubles = complex.Select(x => x.Real).ToArray();
@@ -170,13 +170,13 @@ namespace FFTTools
             Debug.Assert(fg.Length == n0*n1);
             Debug.Assert(f.Length == fg.Length);
             Debug.Assert(g.Length == fg.Length);
-            int length = fg.Length;
-            Complex[] complex = f.ToArray();
+            var length = fg.Length;
+            var complex = f.ToArray();
             Fourier(n0, n1, complex, FourierDirection.Forward);
-            Complex[] complex1 = g.ToArray();
+            var complex1 = g.ToArray();
             Fourier(n0, n1, complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(n0, n1, complex, FourierDirection.Backward);
             Array.Copy(complex, 0, fg, 0, length);
@@ -196,13 +196,13 @@ namespace FFTTools
             Debug.Assert(fg.Length == n0*n1*n2);
             Debug.Assert(f.Length == fg.Length);
             Debug.Assert(g.Length == fg.Length);
-            int length = fg.Length;
-            Complex[] complex = f.ToArray();
+            var length = fg.Length;
+            var complex = f.ToArray();
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
-            Complex[] complex1 = g.ToArray();
+            var complex1 = g.ToArray();
             Fourier(n0, n1, n2, complex1, FourierDirection.Backward);
-            int index = 0;
-            foreach (Complex value in complex1)
+            var index = 0;
+            foreach (var value in complex1)
                 complex[index++] *= value/length;
             Fourier(n0, n1, n2, complex, FourierDirection.Backward);
             Array.Copy(complex, 0, fg, 0, length);

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -58,18 +59,18 @@ namespace FFTTools
         {
             using (var image = new Image<Gray, double>(source.Width, source.Height))
             {
-                int length = image.Data.Length;
-                int n0 = image.Data.GetLength(0);
-                int n1 = image.Data.GetLength(1);
-                int n2 = image.Data.GetLength(2);
-                double[] doubles = Enumerable.Repeat(1.0, length).ToArray();
-                Size filterSize = _filterSize;
+                var length = image.Data.Length;
+                var n0 = image.Data.GetLength(0);
+                var n1 = image.Data.GetLength(1);
+                var n2 = image.Data.GetLength(2);
+                var doubles = Enumerable.Repeat(1.0, length).ToArray();
+                var filterSize = _filterSize;
                 switch (_filterMode)
                 {
                     case FilterMode.FilterSize:
                         break;
                     case FilterMode.FilterStep:
-                        int filterStep = _filterStep;
+                        var filterStep = _filterStep;
                         filterSize = new Size(MulDiv(n1, filterStep, filterStep + 1),
                             MulDiv(n0, filterStep, filterStep + 1));
                         break;
@@ -77,10 +78,14 @@ namespace FFTTools
                         throw new NotImplementedException();
                 }
                 BlindOuter(n0, n1, doubles, filterSize, n2);
-                double max = doubles.Max();
+                var max = doubles.Max();
                 doubles = doubles.Select(x => Math.Round(255.0*x/max)).ToArray();
-                Buffer.BlockCopy(doubles, 0, image.Data, 0, length*sizeof (double));
-                return image.Convert<Bgr, Byte>().ToBitmap();
+
+                var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+                handle.Free();
+
+                return image.Convert<Bgr, byte>().ToBitmap();
             }
         }
 
@@ -88,44 +93,34 @@ namespace FFTTools
         ///     Sharp bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Sharped bitmap</returns>
-        public Image<Bgr, Byte> Sharp(Image<Bgr, Byte> bitmap)
+        private Array Sharp(Array data)
         {
-            using (Image<Bgr, double> image = bitmap.Convert<Bgr, double>())
-            {
-                image.Data = Sharp(image.Data);
-                return image.Convert<Bgr, Byte>();
-            }
-        }
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-        /// <summary>
-        ///     Sharp bitmap with the Fastest Fourier Transform
-        /// </summary>
-        /// <returns>Sharped bitmap</returns>
-        private double[,,] Sharp(double[,,] imageData)
-        {
-            int length = imageData.Length;
-            int n0 = imageData.GetLength(0);
-            int n1 = imageData.GetLength(1);
-            int n2 = imageData.GetLength(2);
+            var length = data.Length;
+            var n0 = data.GetLength(0);
+            var n1 = data.GetLength(1);
+            var n2 = data.GetLength(2);
 
             var doubles = new double[length];
-            Buffer.BlockCopy(imageData, 0, doubles, 0, length*sizeof (double));
+
+            Marshal.Copy(handle.AddrOfPinnedObject(), doubles, 0, doubles.Length);
 
             double average;
             double delta;
             AverageAndDelta(out average, out delta, doubles, _keepOption);
 
-            Complex[] complex = doubles.Select(x => new Complex(x, 0)).ToArray();
+            var complex = doubles.Select(x => new Complex(x, 0)).ToArray();
 
             Fourier(n0, n1, n2, complex, FourierDirection.Forward);
-            Complex level = complex[0];
-            Size filterSize = _filterSize;
+            var level = complex[0];
+            var filterSize = _filterSize;
             switch (_filterMode)
             {
                 case FilterMode.FilterSize:
                     break;
                 case FilterMode.FilterStep:
-                    int filterStep = _filterStep;
+                    var filterStep = _filterStep;
                     filterSize = new Size(MulDiv(n1, filterStep, filterStep + 1),
                         MulDiv(n0, filterStep, filterStep + 1));
                     break;
@@ -143,25 +138,30 @@ namespace FFTTools
 
             // a*average2 + b == average
             // a*delta2 == delta
-            double a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
-            double b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
+            var a = (_keepOption == KeepOption.AverageAndDelta) ? (delta/delta2) : (average/average2);
+            var b = (_keepOption == KeepOption.AverageAndDelta) ? (average - a*average2) : 0;
             Debug.Assert(Math.Abs(a*average2 + b - average) < 0.1);
             doubles = doubles.Select(x => Math.Round(a*x + b)).ToArray();
 
-            Buffer.BlockCopy(doubles, 0, imageData, 0, length*sizeof (double));
-            return imageData;
+            Marshal.Copy(doubles, 0, handle.AddrOfPinnedObject(), doubles.Length);
+
+            handle.Free();
+
+            return data;
         }
 
         /// <summary>
         ///     Sharp bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Sharped bitmap</returns>
-        public Image<Gray, Byte> Sharp(Image<Gray, Byte> bitmap)
+        public Image<TColor, TDepth> Sharp<TColor, TDepth>(Image<TColor, TDepth> bitmap)
+            where TColor : struct, IColor
+            where TDepth : new()
         {
-            using (Image<Gray, double> image = bitmap.Convert<Gray, double>())
+            using (var image = bitmap.Convert<TColor, double>())
             {
-                image.Data = Sharp(image.Data);
-                return image.Convert<Gray, Byte>();
+                image.Data = Sharp(image.Data) as double[,,];
+                return image.Convert<TColor, TDepth>();
             }
         }
 
@@ -173,7 +173,7 @@ namespace FFTTools
         {
             using (var image = new Image<Bgr, double>(bitmap))
             {
-                image.Data = Sharp(image.Data);
+                image.Data = Sharp(image.Data) as double[,,];
                 return image.ToBitmap();
             }
         }
