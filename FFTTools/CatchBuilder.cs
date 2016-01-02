@@ -17,16 +17,21 @@ namespace FFTTools
     {
         private readonly bool _fastMode;
         private readonly Array _patternData;
+        private readonly bool _withColor;
 
         /// <summary>
         ///     Builder constructor
         /// </summary>
         /// <param name="pattern">Pattern bitmap</param>
+        /// <param name="withColor">Catch with color</param>
         /// <param name="fastMode">Do not calculate power. Do not divide to power.</param>
-        public CatchBuilder(Bitmap pattern, bool fastMode = false)
+        public CatchBuilder(Bitmap pattern, bool withColor = false, bool fastMode = false)
         {
+            _withColor = withColor;
             _fastMode = fastMode;
-            _patternData = pattern.ToImage<Gray, byte>().Convert<Gray, double>().Data;
+            _patternData = _withColor
+                ? pattern.ToImage<Bgr, byte>().Convert<Bgr, double>().Data
+                : pattern.ToImage<Gray, byte>().Convert<Gray, double>().Data;
         }
 
         /// <summary>
@@ -38,7 +43,9 @@ namespace FFTTools
 
         public Bitmap ToBitmap(Bitmap source)
         {
-            var data = Catch(source.ToImage<Gray, byte>().Convert<Gray, double>().Data);
+            var data = Catch(_withColor
+                ? source.ToImage<Bgr, byte>().Convert<Bgr, double>().Data
+                : source.ToImage<Gray, byte>().Convert<Gray, double>().Data);
             var n0 = data.GetLength(0); // Image height
             var n1 = data.GetLength(1); // Image width
             var length = data.Length;
@@ -62,21 +69,23 @@ namespace FFTTools
         /// </summary>
         /// <param name="input">Input array</param>
         /// <param name="output">Output array</param>
-        private static void Copy(double[,,] input, double[,] output)
+        private static void Copy(double[,,] input, double[,,] output)
         {
             var n0 = output.GetLength(0);
             var n1 = output.GetLength(1);
+            var n2 = output.GetLength(2);
             var m0 = Math.Min(n0, input.GetLength(0));
             var m1 = Math.Min(n1, input.GetLength(1));
-            var m2 = input.GetLength(2);
+            var m2 = Math.Min(n2, input.GetLength(2));
+            var inputOffset = input.GetLength(1)*input.GetLength(2)*sizeof (double);
+            var outputOffset = output.GetLength(1)*output.GetLength(2)*sizeof (double);
+            var count = m1*m2*sizeof (double);
+            Debug.Assert(n2 == m2);
 
-            var buffer = new double[m2];
-            for (var i = 0; i < m0; i++)
-                for (var j = 0; j < m1; j++)
-                {
-                    Buffer.BlockCopy(input, (i*m1 + j)*m2*sizeof (double), buffer, 0, m2*sizeof (double));
-                    output[i, j] = buffer.Sum();
-                }
+            var srcOffset = 0;
+            var destOffset = 0;
+            for (var i = 0; i < m0; i++,srcOffset += inputOffset, destOffset += outputOffset)
+                Buffer.BlockCopy(input, srcOffset, output, destOffset, count);
         }
 
         /// <summary>
@@ -87,17 +96,23 @@ namespace FFTTools
         /// <param name="input">Input array</param>
         /// <param name="output">Output array</param>
         /// <param name="value">Value to replace copied data</param>
-        private static void CopyAndReplace(double[,,] input, double[,] output, double value = 1.0)
+        private static void CopyAndReplace(double[,,] input, double[,,] output, double value = 1.0)
         {
             var n0 = output.GetLength(0);
             var n1 = output.GetLength(1);
+            var n2 = output.GetLength(2);
             var m0 = Math.Min(n0, input.GetLength(0));
             var m1 = Math.Min(n1, input.GetLength(1));
-            var m2 = input.GetLength(2);
+            var m2 = Math.Min(n2, input.GetLength(2));
+            var outputOffset = output.GetLength(1)*output.GetLength(2)*sizeof (double);
+            var count = m1*m2*sizeof (double);
+            var buffer = Enumerable.Repeat(value, m1*m2).ToArray();
 
-            for (var i = 0; i < m0; i++)
-                for (var j = 0; j < m1; j++)
-                    output[i, j] = value;
+            Debug.Assert(n2 == m2);
+
+            var destOffset = 0;
+            for (var i = 0; i < m0; i++, destOffset += outputOffset)
+                Buffer.BlockCopy(buffer, 0, output, destOffset, count);
         }
 
         /// <summary>
@@ -137,11 +152,10 @@ namespace FFTTools
             var n1 = array.GetLength(1); // Image width
             var n2 = array.GetLength(2); // Image colors
 
-            Debug.Assert(n2 == 1);
-
             var patternData = _patternData as double[,,];
             var imageData = array as double[,,];
-            var data = new double[n0, n1];
+            var data = new double[n0, n1, n2];
+            var data1 = new double[n0, n1];
 
             Array.Clear(data, 0, data.Length);
             var doubles = new double[data.Length];
@@ -154,20 +168,20 @@ namespace FFTTools
             Buffer.BlockCopy(data, 0, doubles, 0, data.Length*sizeof (double));
             var second = doubles.Select(x => new Complex(x, 0)).ToArray();
 
-            Fourier(n0, n1, first, FourierDirection.Forward);
-            Fourier(n0, n1, second, FourierDirection.Forward);
+            Fourier(n0, n1, n2, first, FourierDirection.Forward);
+            Fourier(n0, n1, n2, second, FourierDirection.Forward);
 
             first = first.Select(Complex.Conjugate).Zip(second,
                 (x, y) => x*y).ToArray();
 
-            Fourier(n0, n1, first, FourierDirection.Backward);
-            var doubles1 = first.Select(x => x.Magnitude).ToArray();
+            Fourier(n0, n1, n2, first, FourierDirection.Backward);
+            var doubles1 = first.Where((x, i) => i%n2 == 0).Select(x => x.Magnitude).ToArray();
 
             if (_fastMode)
             {
                 // Fast Result
-                Buffer.BlockCopy(doubles1, 0, data, 0, data.Length*sizeof (double));
-                return data;
+                Buffer.BlockCopy(doubles1, 0, data1, 0, data1.Length*sizeof (double));
+                return data1;
             }
 
             // Calculate Divider (aka Power)
@@ -180,13 +194,13 @@ namespace FFTTools
                 (x, y) => x*y).Select(Complex.Conjugate).Zip(second,
                     (x, y) => x*y).ToArray();
 
-            Fourier(n0, n1, first, FourierDirection.Backward);
-            var doubles2 = first.Select(x => x.Magnitude).ToArray();
+            Fourier(n0, n1, n2, first, FourierDirection.Backward);
+            var doubles2 = first.Where((x, i) => i%n2 == 0).Select(x => x.Magnitude).ToArray();
 
             // Result
-            Buffer.BlockCopy(doubles1.Zip(doubles2, (x, y) => (f + x*x)/(f + y)).ToArray(), 0, data, 0,
+            Buffer.BlockCopy(doubles1.Zip(doubles2, (x, y) => (f + x*x)/(f + y)).ToArray(), 0, data1, 0,
                 data.Length*sizeof (double));
-            return data;
+            return data1;
         }
 
         /// <summary>
@@ -195,12 +209,16 @@ namespace FFTTools
         /// <returns>Matrix of values</returns>
         public double[,] Catch<TColor, TDepth>(Image<TColor, TDepth> bitmap)
             where TColor : struct, IColor
-            where TDepth : new() => Catch(bitmap.Convert<Gray, double>().Data);
+            where TDepth : new() => Catch(_withColor
+                ? bitmap.Convert<Bgr, double>().Data
+                : bitmap.Convert<Gray, double>().Data);
 
         /// <summary>
         ///     Catch pattern bitmap with the Fastest Fourier Transform
         /// </summary>
         /// <returns>Array of values</returns>
-        public double[,] Catch(Bitmap bitmap) => Catch(bitmap.ToImage<Gray, byte>().Convert<Gray, double>().Data);
+        public double[,] Catch(Bitmap bitmap) => Catch(_withColor
+            ? bitmap.ToImage<Bgr, byte>().Convert<Bgr, double>().Data
+            : bitmap.ToImage<Gray, byte>().Convert<Gray, double>().Data);
     }
 }

@@ -28,6 +28,16 @@ namespace fftcatcher
                     @"Bitmap Images (*.bmp)|*.bmp|All Files (*.*)|*.*";
         }
 
+        private bool WithColor
+        {
+            get { return barCheckItem1.Checked; }
+            set { barCheckItem1.Checked = value; }
+        }
+        private bool FastMode
+        {
+            get { return barCheckItem1.Checked; }
+            set { barCheckItem1.Checked = value; }
+        }
         private void pictureEditFile_EditValueChanged(object sender, EventArgs e)
         {
             try
@@ -103,7 +113,7 @@ namespace fftcatcher
                 var bitmap = pictureEditFile.Image as Bitmap;
                 var pattern = pictureEditPattern.Image as Bitmap;
                 if (bitmap == null || pattern == null) throw new Exception("Нет изображения");
-                using (var builder = new CatchBuilder(pattern))
+                using (var builder = new CatchBuilder(pattern, WithColor, FastMode))
                 {
                     var matrix = builder.Catch(bitmap);
                     int x, y;
@@ -150,7 +160,7 @@ namespace fftcatcher
                 var bitmap = pictureEditFile.Image as Bitmap;
                 var pattern = pictureEditPattern.Image as Bitmap;
                 if (bitmap == null || pattern == null) throw new Exception("Нет изображения");
-                using (var builder = new CatchBuilder(pattern))
+                using (var builder = new CatchBuilder(pattern, WithColor, FastMode))
                     pictureEditFile.Image = builder.ToBitmap(bitmap);
             }
             catch (Exception exception)
