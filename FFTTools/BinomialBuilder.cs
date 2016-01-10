@@ -16,10 +16,10 @@ namespace FFTTools
 
         public static void GetLongs(long[] array, long x = 1)
         {
+            var n = array.Length - 1;
             if (array.Length > 0) array[0] = 1;
-            for (var i = 1; i < array.Length; i++)
-                for (var j = i; j-- > 0;)
-                    array[j + 1] += x*array[j];
+            for (var i = 0; i < n; i++)
+                array[i + 1] = x*array[i]*(n - i)/(i + 1);
         }
 
         public static void GetDoubles(double[] array, double x = 1.0)
