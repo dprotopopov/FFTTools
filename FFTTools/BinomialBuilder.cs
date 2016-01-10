@@ -35,7 +35,7 @@ namespace FFTTools
                 Fourier(complex, FourierDirection.Backward);
             }
             var index = 0;
-            foreach (var value in complex) array[index++] = value.Magnitude;
+            foreach (var value in complex) array[index++] = value.Real;
         }
 
         public Bitmap ToBitmap(Bitmap source)
