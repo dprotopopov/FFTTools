@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
-using DevExpress.XtraEditors;
+using System.Windows.Forms;
 
 namespace fftdeblur
 {
-    public partial class FilterDialog : XtraForm
+    public partial class FilterDialog : Form
     {
         private readonly Size _size;
 

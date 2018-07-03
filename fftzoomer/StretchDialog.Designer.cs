@@ -1,4 +1,6 @@
-﻿namespace fftzoomer
+﻿using System.Windows.Forms;
+
+namespace fftzoomer
 {
     partial class StretchDialog
     {
@@ -28,46 +30,37 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.formAssistant1 = new DevExpress.XtraBars.FormAssistant();
-            this.layoutControl1 = new DevExpress.XtraLayout.LayoutControl();
+            this.layoutControl1 = new System.Windows.Forms.TableLayoutPanel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.spinEdit2 = new DevExpress.XtraEditors.SpinEdit();
-            this.spinEdit1 = new DevExpress.XtraEditors.SpinEdit();
-            this.layoutControlGroup1 = new DevExpress.XtraLayout.LayoutControlGroup();
-            this.layoutControlItem1 = new DevExpress.XtraLayout.LayoutControlItem();
-            this.layoutControlItem2 = new DevExpress.XtraLayout.LayoutControlItem();
-            this.layoutControlItem3 = new DevExpress.XtraLayout.LayoutControlItem();
-            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
-            this.simpleButton2 = new DevExpress.XtraEditors.SimpleButton();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).BeginInit();
+            this.spinEdit2 = new System.Windows.Forms.NumericUpDown();
+            this.spinEdit1 = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.simpleButton1 = new System.Windows.Forms.Button();
+            this.simpleButton2 = new System.Windows.Forms.Button();
             this.layoutControl1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.spinEdit2.Properties)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spinEdit1.Properties)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spinEdit2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spinEdit1)).BeginInit();
             this.SuspendLayout();
             // 
             // layoutControl1
             // 
-            this.layoutControl1.Controls.Add(this.checkBox1);
-            this.layoutControl1.Controls.Add(this.spinEdit2);
-            this.layoutControl1.Controls.Add(this.spinEdit1);
-            this.layoutControl1.Location = new System.Drawing.Point(55, 33);
+            this.layoutControl1.ColumnCount = 2;
+            this.layoutControl1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 41.51625F));
+            this.layoutControl1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 58.48375F));
+            this.layoutControl1.Controls.Add(this.checkBox1, 1, 0);
+            this.layoutControl1.Controls.Add(this.spinEdit2, 1, 2);
+            this.layoutControl1.Controls.Add(this.spinEdit1, 1, 1);
+            this.layoutControl1.Controls.Add(this.label1, 0, 2);
+            this.layoutControl1.Controls.Add(this.label2, 0, 1);
+            this.layoutControl1.Location = new System.Drawing.Point(49, 28);
             this.layoutControl1.Name = "layoutControl1";
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.BackColor = System.Drawing.Color.LightGray;
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.Font = new System.Drawing.Font("Tahoma", 10.25F);
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.Options.UseBackColor = true;
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.Options.UseFont = true;
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.Options.UseTextOptions = true;
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            this.layoutControl1.OptionsPrint.AppearanceGroupCaption.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center;
-            this.layoutControl1.OptionsPrint.AppearanceItemCaption.Options.UseTextOptions = true;
-            this.layoutControl1.OptionsPrint.AppearanceItemCaption.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-            this.layoutControl1.OptionsPrint.AppearanceItemCaption.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center;
-            this.layoutControl1.Root = this.layoutControlGroup1;
-            this.layoutControl1.Size = new System.Drawing.Size(312, 217);
+            this.layoutControl1.RowCount = 3;
+            this.layoutControl1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.layoutControl1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.layoutControl1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.layoutControl1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.layoutControl1.Size = new System.Drawing.Size(277, 143);
             this.layoutControl1.TabIndex = 0;
             this.layoutControl1.Text = "layoutControl1";
             // 
@@ -75,162 +68,103 @@
             // 
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(12, 72);
+            this.checkBox1.Location = new System.Drawing.Point(118, 3);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(288, 20);
+            this.checkBox1.Size = new System.Drawing.Size(156, 14);
             this.checkBox1.TabIndex = 6;
             this.checkBox1.Text = "Keep proportions";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // spinEdit2
             // 
-            this.spinEdit2.EditValue = new decimal(new int[] {
-            1,
+            this.spinEdit2.Location = new System.Drawing.Point(118, 97);
+            this.spinEdit2.Maximum = new decimal(new int[] {
+            10000,
             0,
             0,
             0});
-            this.spinEdit2.Location = new System.Drawing.Point(61, 42);
             this.spinEdit2.Name = "spinEdit2";
-            this.spinEdit2.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
-            this.spinEdit2.Properties.IsFloatValue = false;
-            this.spinEdit2.Properties.Mask.EditMask = "N00";
-            this.spinEdit2.Properties.MaxValue = new decimal(new int[] {
-            999999,
-            0,
-            0,
-            0});
-            this.spinEdit2.Properties.MinValue = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.spinEdit2.Size = new System.Drawing.Size(239, 26);
-            this.spinEdit2.StyleController = this.layoutControl1;
+            this.spinEdit2.Size = new System.Drawing.Size(156, 22);
             this.spinEdit2.TabIndex = 5;
-            this.spinEdit2.EditValueChanged += new System.EventHandler(this.spinEdit2_EditValueChanged);
+            this.spinEdit2.ValueChanged += new System.EventHandler(this.spinEdit2_EditValueChanged);
             // 
             // spinEdit1
             // 
-            this.spinEdit1.EditValue = new decimal(new int[] {
-            1,
+            this.spinEdit1.Location = new System.Drawing.Point(118, 50);
+            this.spinEdit1.Maximum = new decimal(new int[] {
+            10000,
             0,
             0,
             0});
-            this.spinEdit1.Location = new System.Drawing.Point(61, 12);
             this.spinEdit1.Name = "spinEdit1";
-            this.spinEdit1.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
-            this.spinEdit1.Properties.IsFloatValue = false;
-            this.spinEdit1.Properties.Mask.EditMask = "N00";
-            this.spinEdit1.Properties.MaxValue = new decimal(new int[] {
-            999999,
-            0,
-            0,
-            0});
-            this.spinEdit1.Properties.MinValue = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.spinEdit1.Size = new System.Drawing.Size(239, 26);
-            this.spinEdit1.StyleController = this.layoutControl1;
+            this.spinEdit1.Size = new System.Drawing.Size(156, 22);
             this.spinEdit1.TabIndex = 4;
-            this.spinEdit1.EditValueChanged += new System.EventHandler(this.spinEdit1_EditValueChanged);
+            this.spinEdit1.ValueChanged += new System.EventHandler(this.spinEdit1_EditValueChanged);
             // 
-            // layoutControlGroup1
+            // label1
             // 
-            this.layoutControlGroup1.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True;
-            this.layoutControlGroup1.GroupBordersVisible = false;
-            this.layoutControlGroup1.Items.AddRange(new DevExpress.XtraLayout.BaseLayoutItem[] {
-            this.layoutControlItem1,
-            this.layoutControlItem2,
-            this.layoutControlItem3});
-            this.layoutControlGroup1.Location = new System.Drawing.Point(0, 0);
-            this.layoutControlGroup1.Name = "layoutControlGroup1";
-            this.layoutControlGroup1.Size = new System.Drawing.Size(312, 217);
-            this.layoutControlGroup1.TextVisible = false;
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 94);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(49, 17);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Height";
             // 
-            // layoutControlItem1
+            // label2
             // 
-            this.layoutControlItem1.Control = this.spinEdit1;
-            this.layoutControlItem1.Location = new System.Drawing.Point(0, 0);
-            this.layoutControlItem1.Name = "layoutControlItem1";
-            this.layoutControlItem1.Size = new System.Drawing.Size(292, 30);
-            this.layoutControlItem1.Text = "Width";
-            this.layoutControlItem1.TextSize = new System.Drawing.Size(46, 19);
-            // 
-            // layoutControlItem2
-            // 
-            this.layoutControlItem2.Control = this.spinEdit2;
-            this.layoutControlItem2.Location = new System.Drawing.Point(0, 30);
-            this.layoutControlItem2.Name = "layoutControlItem2";
-            this.layoutControlItem2.Size = new System.Drawing.Size(292, 30);
-            this.layoutControlItem2.Text = "Height";
-            this.layoutControlItem2.TextSize = new System.Drawing.Size(46, 19);
-            // 
-            // layoutControlItem3
-            // 
-            this.layoutControlItem3.Control = this.checkBox1;
-            this.layoutControlItem3.Location = new System.Drawing.Point(0, 60);
-            this.layoutControlItem3.Name = "layoutControlItem3";
-            this.layoutControlItem3.Size = new System.Drawing.Size(292, 137);
-            this.layoutControlItem3.TextSize = new System.Drawing.Size(0, 0);
-            this.layoutControlItem3.TextVisible = false;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(3, 47);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(44, 17);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Width";
             // 
             // simpleButton1
             // 
             this.simpleButton1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.simpleButton1.Location = new System.Drawing.Point(160, 257);
+            this.simpleButton1.Location = new System.Drawing.Point(142, 216);
             this.simpleButton1.Name = "simpleButton1";
-            this.simpleButton1.Size = new System.Drawing.Size(92, 23);
+            this.simpleButton1.Size = new System.Drawing.Size(82, 19);
             this.simpleButton1.TabIndex = 1;
             this.simpleButton1.Text = "Ok";
             // 
             // simpleButton2
             // 
             this.simpleButton2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.simpleButton2.Location = new System.Drawing.Point(270, 257);
+            this.simpleButton2.Location = new System.Drawing.Point(240, 216);
             this.simpleButton2.Name = "simpleButton2";
-            this.simpleButton2.Size = new System.Drawing.Size(85, 23);
+            this.simpleButton2.Size = new System.Drawing.Size(76, 19);
             this.simpleButton2.TabIndex = 2;
             this.simpleButton2.Text = "Cancel";
             // 
             // StretchDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(420, 314);
+            this.ClientSize = new System.Drawing.Size(373, 264);
             this.Controls.Add(this.simpleButton2);
             this.Controls.Add(this.simpleButton1);
             this.Controls.Add(this.layoutControl1);
             this.Name = "StretchDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Stretch Options";
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).EndInit();
             this.layoutControl1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.spinEdit2.Properties)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spinEdit1.Properties)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem3)).EndInit();
+            this.layoutControl1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spinEdit2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spinEdit1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private DevExpress.XtraBars.FormAssistant formAssistant1;
-        private DevExpress.XtraLayout.LayoutControl layoutControl1;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private DevExpress.XtraEditors.SpinEdit spinEdit2;
-        private DevExpress.XtraEditors.SpinEdit spinEdit1;
-        private DevExpress.XtraLayout.LayoutControlGroup layoutControlGroup1;
-        private DevExpress.XtraLayout.LayoutControlItem layoutControlItem1;
-        private DevExpress.XtraLayout.LayoutControlItem layoutControlItem2;
-        private DevExpress.XtraLayout.LayoutControlItem layoutControlItem3;
-        private DevExpress.XtraEditors.SimpleButton simpleButton1;
-        private DevExpress.XtraEditors.SimpleButton simpleButton2;
+        private TableLayoutPanel layoutControl1;
+        private CheckBox checkBox1;
+        private NumericUpDown spinEdit1;
+        private NumericUpDown spinEdit2;
+        private Button simpleButton1;
+        private Button simpleButton2;
+        private Label label1;
+        private Label label2;
     }
 }

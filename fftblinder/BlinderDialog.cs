@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
-using DevExpress.XtraEditors;
+using System.Windows.Forms;
 
 namespace fftblinder
 {
-    public partial class BlinderDialog : XtraForm
+    public partial class BlinderDialog : Form
     {
         private readonly Size _size;
 

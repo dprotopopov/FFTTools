@@ -12,6 +12,8 @@ packages/
 *.suo
 *.user
 *.sln.docstates
+*.bak
+*.pfx
 
 # Build results
 [Dd]ebug/

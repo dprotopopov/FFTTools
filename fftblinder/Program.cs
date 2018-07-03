@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using DevExpress.LookAndFeel;
-using DevExpress.Skins;
-using DevExpress.UserSkins;
 
 namespace fftblinder
 {
@@ -16,10 +13,6 @@ namespace fftblinder
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            SkinManager.EnableFormSkins();
-            BonusSkins.Register();
-            UserLookAndFeel.Default.SetSkinStyle("DevExpress Style");
 
             Application.Run(new MainForm());
         }

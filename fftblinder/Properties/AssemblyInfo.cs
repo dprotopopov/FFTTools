@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("fftblinder")]
-[assembly: AssemblyDescription("Blur or sharp bitmap with the Fastest Fourier Transform")]
+[assembly: AssemblyTitle("fftfilter")]
+[assembly: AssemblyDescription("Filter bitmap with the Fastest Fourier Transform")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dmitry Protopopov")]
-[assembly: AssemblyProduct("fftblinder")]
+[assembly: AssemblyProduct("fftfilter")]
 [assembly: AssemblyCopyright("Copyright © 2015, Dmitry Protopopov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

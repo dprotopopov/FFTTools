@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using DevExpress.XtraEditors;
+using System.Windows.Forms;
 
 namespace fftzoomer
 {
-    public partial class StretchDialog : XtraForm
+    public partial class StretchDialog : Form
     {
         private readonly Size _size;
 
@@ -32,8 +32,9 @@ namespace fftzoomer
         {
             if (KeepProportions)
             {
-                spinEdit1.Value = spinEdit2.Value*_size.Width/_size.Height;
+                spinEdit1.Value = spinEdit2.Value * _size.Width / _size.Height;
             }
+
         }
     }
 }
