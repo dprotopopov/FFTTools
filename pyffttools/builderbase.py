@@ -15,6 +15,11 @@ class BuilderBase:
         return np.absolute(np.fft.ifftn(data))
 
     def Split(self, data: np.array, outer: np.array, middle: np.array, inner: np.array, height: int, width: int):
+        assert len(data.shape) >= 2
+        assert len(outer.shape) >= 2
+        assert len(middle.shape) >= 2
+        assert len(inner.shape) >= 2
+
         s0 = max(0, math.floor((data.shape[0]-height)/2))
         s1 = max(0, math.floor((data.shape[1]-width)/2))
         e0 = min(data.shape[0], math.ceil((data.shape[0]+height)/2))
@@ -41,6 +46,8 @@ class BuilderBase:
         middle[s0:e0, e1:] = data[s0:e0, e1:]
 
     def BlindInner(self, data: np.array, height: int, width: int):
+        assert len(data.shape) >= 2
+        
         s0 = max(0, math.floor((data.shape[0]-height)/2))
         s1 = max(0, math.floor((data.shape[1]-width)/2))
         e0 = min(data.shape[0], math.ceil((data.shape[0]+height)/2))
@@ -54,6 +61,8 @@ class BuilderBase:
         data[s0:e0, e1:].fill(0)
 
     def BlindOuter(self, data: np.array, height: int, width: int):
+        assert len(data.shape) >= 2
+        
         s0 = max(0, math.floor((data.shape[0]-height)/2))
         s1 = max(0, math.floor((data.shape[1]-width)/2))
         e0 = min(data.shape[0], math.ceil((data.shape[0]+height)/2))
@@ -70,6 +79,9 @@ class BuilderBase:
         data[s0:e0, e1:].fill(0)
 
     def Copy(self, src: np.array, dest: np.array):
+        assert len(src.shape) >= 2
+        assert len(dest.shape) >= 2
+        
         n0 = math.ceil(min(src.shape[0], dest.shape[0])/2)
         n1 = math.ceil(min(src.shape[1], dest.shape[1])/2)
         dest[1-n0:n0-1, :n1-1].fill(0)

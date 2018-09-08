@@ -8,7 +8,7 @@ image = np.asarray(img, float)/255
 pattern = np.asarray(pat, float)/255
 builder = CatchBuilder(pattern)
 data = builder.Catch(image)
-y, x = np.unravel_index(np.argmax(data, axis=None), data.shape)
+y, x = builder.ArgMax(data)
 height, width, channels = pattern.shape
 cv2.rectangle(img, (x, y), (x+width, y+height), (0, 0, 255), 1)
 print(x, y)

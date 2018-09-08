@@ -19,7 +19,7 @@ class BlurBuilder(BuilderBase):
         variance2 = np.var(data2)
         a = math.sqrt(variance/variance2)
         b = average - average2*a
-        return a*data2+b
+        return (a*data2+b).astype(data.dtype)
 
     def ToBitmap(self, shape: np.array):
         data = np.ndarray(shape)
