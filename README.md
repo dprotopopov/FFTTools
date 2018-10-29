@@ -185,7 +185,7 @@
 
 - (X,Y) = XxY’ = BFT ( FFT(X) * CONJUGATE ( FFT(Y) ) )
 - |X|^2 = (X,X) = XxX’xE’ = BFT ( FFT(X) * CONJUGATE ( FFT(X) ) * CONJUGATE ( FFT(E) ) ) = BFT ( SQUAREMAGNITUDE( FFT(X) ) * CONJUGATE ( FFT(E) ) )
-- |Y|^2 = (Y,Y) = YxY’xE’ = BFT ( FFT(Y) * CONJUGATE ( FFT(Y) ) * CONJUGATE ( FFT(E) ) )
+- |Y|^2 = (Y,Y) = YxY’xE’ = BFT ( FFT(Y) * CONJUGATE ( FFT(Y) ) * CONJUGATE ( FFT(E) ) ) = BFT ( SQUAREMAGNITUDE( FFT(Y) ) * CONJUGATE ( FFT(E) ) )
 
 Где
 
